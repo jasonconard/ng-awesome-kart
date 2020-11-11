@@ -123,6 +123,10 @@
           }
         }
       }
-    }},
-  "defaultProject": "ng-kart"
+    }
+  },
+  "defaultProject": "ng-kart",
+  "cli": {
+    "analytics": "f6701fc6-7cb0-446e-9809-6c3134800131"
+  }
 }

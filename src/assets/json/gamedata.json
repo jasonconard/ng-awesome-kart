@@ -1,0 +1,69 @@
+{
+  "drivers": [
+    {
+      "id": "jawg-bald",
+      "name": "Jawg Bald",
+      "mainColor": "#FF0000",
+      "mainBackground": "assets/players/jawg-bald/bg.png",
+      "sprite": "assets/players/jawg-bald/sprite.png",
+      "stats": {
+        "speed": 2,
+        "acceleration": 5,
+        "weight": 2,
+        "handling": 5,
+        "traction": 5,
+        "luck": 3,
+        "width": 5
+      }
+    },{
+      "id": "gatling",
+      "name": "Gatling",
+      "mainColor": "#FFAA00",
+      "mainBackground": "assets/players/gatling/bg.png",
+      "sprite": "assets/players/gatling/sprite.png",
+      "stats": {
+        "speed": 6,
+        "acceleration": 1,
+        "weight": 5,
+        "handling": 3,
+        "traction": 3,
+        "luck": 2,
+        "width": 6
+      }
+    },{
+      "id": "mouse",
+      "name": "Mouse",
+      "mainColor": "#FFAA00",
+      "mainBackground": "assets/players/mouse/bg.png",
+      "sprite": "assets/players/mouse/sprite.png",
+      "stats": {
+        "speed": 6,
+        "acceleration": 1,
+        "weight": 5,
+        "handling": 3,
+        "traction": 3,
+        "luck": 2,
+        "width": 6
+      }
+    },{
+      "id": "fou-furieux",
+      "name": "Fou Furieux",
+      "mainColor": "#00AA00",
+      "mainBackground": "assets/players/fou-furieux/bg.png",
+      "sprite": "assets/players/fou-furieux/sprite.png",
+      "stats": {
+        "speed": 4,
+        "acceleration": 4,
+        "weight": 3,
+        "handling": 3,
+        "traction": 3,
+        "luck": 2,
+        "width": 6
+      }
+    }],
+  "circuits": [{
+    "id": "ebiz",
+    "name": "EBiz City",
+    "link": "assets/json/maps/ebiz.json"
+  }]
+}

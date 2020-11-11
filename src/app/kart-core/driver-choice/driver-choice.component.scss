@@ -1,0 +1,85 @@
+
+.player-name {
+  margin-top: 50px;
+  height: 100px;
+  font-size: 24px;
+  color: white;
+  width: 100%;
+
+  display: flex;
+  justify-content: center;
+
+
+  .player-name-field {
+    position: relative;
+    max-width: 400px;
+    width: calc(100% - 20px);
+
+    .name-title {
+      padding: 0 10px;
+    }
+
+    .name-title-error {
+      position: absolute;
+      bottom: 10px;
+      left: 0;
+      padding: 10px 10px 0 10px;
+      color: red;
+
+      font-size: 18px;
+      line-height: 12px;
+    }
+
+    input {
+      width: 100%;
+      height: 40px;
+      margin-top: 5px;
+
+
+      font-family: 'Visitor', sans-serif;
+      font-size: 24px;
+      padding: 0 10px;
+    }
+  }
+}
+
+.driver-choice {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+
+  .driver-list {
+    flex: 1;
+
+    margin-right: 10px;
+
+    background: rgba(0,0,0,0.5);
+    padding: 10px;
+
+    color: white;
+
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    align-items: center;
+
+    .driver-list-content {
+      display: flex;
+      flex-wrap: wrap;
+    }
+  }
+
+  .driver-stats {
+    padding: 10px;
+    .driver-name {
+      font-size: 36px;
+      margin-bottom: 10px;
+      color: white;
+
+      transform-origin: 50%;
+      width: 100%;
+      text-align: center;
+    }
+
+  }
+}

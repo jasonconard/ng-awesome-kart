@@ -1,0 +1,11 @@
+<div class="footer-btn"
+     *ngFor="let btn of btns"
+     (click)="onBtnClick(btn)"
+     [style.background]="btn.background">
+
+  <div class="btn-icon" *ngIf="btn.icon">
+    <img [src]="btn.icon">
+  </div>
+
+  <span class="btn-text"> {{btn.name}} </span>
+</div>

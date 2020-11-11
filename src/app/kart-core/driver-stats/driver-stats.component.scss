@@ -1,0 +1,27 @@
+:host {
+  display: block;
+}
+
+.driver-stats {
+  .driver-stats-title {
+    color: white;
+    font-size: 24px;
+    margin: 8px 0 0 0;
+  }
+
+  .driver-stats-row {
+    display: flex;
+
+    .driver-stats-cell {
+      //width: 25px;
+      //height: 15px;
+      width: 40px;
+      height: 25px;
+      transition: background 200ms ease-in-out;
+      border: 2px solid rgb(255,255,255);
+      image-rendering: -moz-crisp-edges;
+      image-rendering: pixelated;
+      background-size: cover;
+    }
+  }
+}

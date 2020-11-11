@@ -1,0 +1,8 @@
+<div class="driver-stats" *ngFor="let stats of statsList">
+  <div class="driver-stats-title">{{ stats.label }}</div>
+  <div class="driver-stats-row">
+    <div class="driver-stats-cell"
+         *ngFor="let cell of valueCells"
+         [ngStyle]="getDriverStyle(stats.value >= cell)"></div>
+  </div>
+</div>

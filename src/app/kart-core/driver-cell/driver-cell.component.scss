@@ -1,0 +1,32 @@
+:host {
+  margin: 10px;
+  cursor: pointer;
+}
+
+.driver-cell {
+  width: 80px;
+  height: 80px;
+
+  image-rendering: -moz-crisp-edges;
+  image-rendering: pixelated;
+  background-size: cover;
+
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  overflow: hidden;
+
+  &.selected {
+    border: 2px solid white;
+  }
+
+  .driver-cell-sprite {
+    width: 64px;
+    height: 64px;
+
+    image-rendering: -moz-crisp-edges;
+    image-rendering: pixelated;
+
+    transform: scale(2);
+  }
+}
