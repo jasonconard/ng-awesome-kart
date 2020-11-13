@@ -13,6 +13,9 @@ export class BindingsService {
   private stickSubject = new Subject<Stick>();
   public stickState = this.stickSubject.asObservable();
 
+  private jumpPushedSubject = new Subject<any>();
+  public jumpPushedState = this.jumpPushedSubject.asObservable();
+
   private keydownSubject = new Subject<string>();
   public keydownState = this.keydownSubject.asObservable();
 
@@ -72,6 +75,10 @@ export class BindingsService {
     this.stickSubject.next(stick);
   }
 
+  public updateJump(jumpPushed: boolean) {
+    this.jumpPushedSubject.next(jumpPushed);
+  }
+
   public bindTouching(canvas: HTMLElement) {
 
     canvas.addEventListener("touchstart", (e) => {
@@ -81,6 +88,7 @@ export class BindingsService {
         if(!this.driftTouches){
           this.driftTouches = touches;
           this.down[68] = true;
+          this.updateJump(true);
         }
       } else {
 
@@ -103,6 +111,8 @@ export class BindingsService {
       if(this.driftTouches && currentFingerReleased.identifier === this.driftTouches.identifier){
         this.driftTouches = null;
         this.down[68] = false;
+
+        this.updateJump(false);
       }
       if(this.directionTouches && currentFingerReleased.identifier === this.directionTouches.identifier){
         this.directionTouches = null;

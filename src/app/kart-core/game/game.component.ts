@@ -13,6 +13,7 @@ import { animate, style, transition, trigger } from '@angular/animations';
 import { ResultAction } from '../../shared/models/racerResult';
 import degToRad = MathUtils.degToRad;
 import { MSG_TWITTER, URL_JOB } from '../../app.constants';
+import { Subscription } from 'rxjs';
 
 @Component({
   selector: 'app-game',
@@ -32,6 +33,8 @@ import { MSG_TWITTER, URL_JOB } from '../../app.constants';
   ]
 })
 export class GameComponent implements OnInit, OnDestroy {
+
+  public subs: Subscription[] = [];
 
   private CAMERA_HEIGHT = 8;
 
@@ -59,6 +62,10 @@ export class GameComponent implements OnInit, OnDestroy {
   private beginTime: number = 0;
   public timeLimit: number = this.gameService.timeLimit;
 
+  public isTouchScreen: boolean = this.bindingService.isTouchDevice;
+
+  public jumpButtonPushed: boolean = false;
+
   constructor(private driverService: DriverService,
               private circuitService: CircuitService,
               private gameService: GameService,
@@ -66,6 +73,8 @@ export class GameComponent implements OnInit, OnDestroy {
               private bindingService: BindingsService) { }
 
   ngOnDestroy(): void {
+    this.subs.forEach(sub => sub.unsubscribe());
+    this.subs = [];
     this.clearRace();
   }
 
@@ -148,6 +157,10 @@ export class GameComponent implements OnInit, OnDestroy {
         sub.unsubscribe();
       });
     });
+
+    this.subs.push(this.bindingService.jumpPushedState.subscribe(pushed => {
+      this.jumpButtonPushed = pushed;
+    }));
 
   }
 

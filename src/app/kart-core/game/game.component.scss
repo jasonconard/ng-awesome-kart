@@ -200,6 +200,43 @@
         background-repeat: repeat;
         opacity: 0.1;
       }
+
+      .jump-button {
+        position: absolute;
+        bottom: 0;
+        right: 0;
+        width: 40%;
+        height: 600px;
+        max-height: 80%;
+        user-select: none;
+        pointer-events: none;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        z-index: 20;
+
+        .jump-button-content {
+          width: 70px;
+          height: 70px;
+          border-radius: 50%;
+          opacity: 0.8;
+          overflow: hidden;
+          background: rgba(255, 255, 255, 0.1);
+          color: white;
+          font-size: 24px;
+          letter-spacing: 2px;
+          display: flex;
+          justify-content: center;
+          align-items: center;
+          text-align: center;
+
+          transition: background 60ms ease-in-out;
+
+          &.pushed {
+            background: rgba(255, 255, 255, 0.3);
+          }
+        }
+      }
     }
   }
 }

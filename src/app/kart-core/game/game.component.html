@@ -68,7 +68,13 @@
 <!--       (onRelease)="setBinding('jump_cardboard', false)">-->
 
 <!--    <div class="game-screen-scanlines"></div>-->
-    <app-stick></app-stick>
+    <app-stick *ngIf="isTouchScreen"></app-stick>
+
+    <div class="jump-button" *ngIf="isTouchScreen">
+      <div class="jump-button-content" [class.pushed]="jumpButtonPushed">
+        JUMP
+      </div>
+    </div>
 
     <div class="screen-parallax" #parallax></div>
 
