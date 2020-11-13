@@ -8,6 +8,7 @@ import { Router } from '@angular/router';
 import { GameService } from '../../shared/services/game.service';
 import { BindingsService } from '../../shared/services/bindings.service';
 import { animate, style, transition, trigger } from '@angular/animations';
+import { InitService } from '../../shared/services/init.service';
 
 interface PlayerGrid {
   nbItemPerRow: number,
@@ -55,8 +56,13 @@ export class DriverChoiceComponent implements OnInit, OnDestroy {
 
   public drivers: Driver[] = [];
 
+  private fieldFocus: boolean = false;
+  private fieldFocusTimeout: number = -1;
+  private confirming: boolean = false;
+
   constructor(private driverService: DriverService,
               private gameService: GameService,
+              private initService: InitService,
               private router: Router,
               private bindingsService: BindingsService,
               private footerService: FooterService) { }
@@ -81,10 +87,17 @@ export class DriverChoiceComponent implements OnInit, OnDestroy {
     }));
 
     this.subs.push(fromEvent(window, 'resize').subscribe(() => {
+      if(this.fieldFocus && window.innerHeight < 200) {
+        this.initService.setForcedFullscreen(true);
+      } else {
+        this.initService.setForcedFullscreen(false);
+      }
       this.updatePlayerGrid();
     }));
 
-    this.nameInput.nativeElement.focus();
+    if(!this.bindingsService.isTouchDevice) {
+      this.nameInput.nativeElement.focus();
+    }
   }
 
   public confirm() {
@@ -97,7 +110,11 @@ export class DriverChoiceComponent implements OnInit, OnDestroy {
     this.gameService.setPlayerName(this.playerName.trim());
     this.driverService.selectDriver(this.selectedDriver);
 
-    this.router.navigate(['game']);
+    if(this.fieldFocus) {
+      this.confirming = true;
+    } else {
+      this.router.navigate(['game']);
+    }
   }
 
   ngOnDestroy() {
@@ -154,5 +171,20 @@ export class DriverChoiceComponent implements OnInit, OnDestroy {
     const nbRow = Math.ceil(this.drivers.length / nbItemPerRow);
 
     this.playerGrid = { nbItemPerRow, nbRow, rowWidth };
+  }
+
+  toggleFieldFocus(focused: boolean) {
+    clearTimeout(this.fieldFocusTimeout);
+    if(!focused) {
+      this.fieldFocusTimeout = setTimeout( () => {
+        if(this.confirming) {
+          this.router.navigate(['game']);
+        }
+        this.confirming = false;
+        this.fieldFocus = false;
+      }, 250);
+    } else {
+      this.fieldFocus = true;
+    }
   }
 }

@@ -10,6 +10,10 @@ import { InitService } from './shared/services/init.service';
 })
 export class AppComponent implements OnInit{
 
+  public deviceFullscreenEnabled: boolean = false;
+
+  public forcedFullscreen: boolean = false;
+
   public routeOptions: { headerTitle: string, footerBtns: FooterBtn[], fullscreen: boolean } = {
     headerTitle: '',
     footerBtns: [],
@@ -23,7 +27,13 @@ export class AppComponent implements OnInit{
 
   ngOnInit() {
 
+    this.forcedFullscreen = this.initService.forcedFullscreen;
+
     this.initService.initData();
+
+    this.initService.forcedFullscreenState.subscribe(forced => {
+      this.forcedFullscreen = forced;
+    });
 
     this.router.events.forEach((event) => {
       if (event instanceof NavigationEnd) {
@@ -35,5 +45,18 @@ export class AppComponent implements OnInit{
         }
       }
     });
+  }
+
+  toggleFullscreen() {
+    if(this.deviceFullscreenEnabled) {
+      const rfs = document.exitFullscreen || document['webkitExitFullscreen'] || document['mozCancelFullScreen'] || document['msExitFullscreen'];
+      rfs.call(document);
+      this.deviceFullscreenEnabled = false;
+    } else {
+      const el = document.documentElement;
+      const rfs = el.requestFullscreen || el['webkitRequestFullscreen'] || el['mozRequestFullScreen'] || el['msRequestFullscreen'];
+      rfs.call(el);
+      this.deviceFullscreenEnabled = true;
+    }
   }
 }

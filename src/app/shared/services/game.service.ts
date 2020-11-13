@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { DriftFire, MoveAction, Racer, RACER_PICS, RacerStatus, RotateDirection } from '../models/racer';
 import { DirectionalLight, PerspectiveCamera, Scene, Vector2, Vector3, WebGLRenderer } from 'three';
-import { forkJoin, Observable, Observer } from 'rxjs';
+import { forkJoin, fromEvent, Observable, Observer, Subscription } from 'rxjs';
 import { StereoEffect } from 'three/examples/jsm/effects/StereoEffect';
 import { BindingsService } from './bindings.service';
 import { CircuitService } from './circuit.service';
@@ -14,6 +14,8 @@ import { CookieService } from './cookie.service';
   providedIn: 'root'
 })
 export class GameService {
+
+  private resizeSub: Subscription = null;
 
   private CAMERA_FOCUS = 80;
   private CAMERA_MAX = 2500;
@@ -74,10 +76,17 @@ export class GameService {
 
       this.beginTime = new Date().getTime();
 
-      this.camera = new PerspectiveCamera(100, window.innerWidth / window.innerHeight, 1, this.CAMERA_MAX);
+      this.camera = new PerspectiveCamera(100, this.container.clientWidth / this.container.clientHeight, 1, this.CAMERA_MAX);
       this.camera.position.set(0, 0, racer.z);
       this.camera.up = new Vector3(0,0,1);
       this.camera.lookAt(new Vector3(0, this.CAMERA_FOCUS, 0));
+
+      if(this.resizeSub) {
+        this.resizeSub.unsubscribe();
+      }
+      this.resizeSub = fromEvent(window, 'resize').subscribe( () => {
+        this.onWindowResize();
+      });
 
       // setInterval( () => {
       //   console.log('(' + this.camera.position.x + ', ' + this.camera.position.y + ')');
@@ -113,6 +122,15 @@ export class GameService {
         observer.complete();
       });
     });
+  }
+
+  private onWindowResize() {
+    //window.addEventListener( 'resize', onWindowResize, false );
+
+    this.camera.aspect = this.container.clientWidth / this.container.clientHeight;
+    this.camera.updateProjectionMatrix();
+    this.renderer.setSize( this.container.clientWidth, this.container.clientHeight );
+
   }
 
   private loadResources(): Observable<any> {

@@ -141,11 +141,14 @@ export class GameComponent implements OnInit, OnDestroy {
     this.beginTime = new Date().getTime();
     this.racer.totalTime = 0;
 
-    const sub = this.gameService.initScene(this.screenRef.nativeElement, this.racer).subscribe( () => {
-      this.isLoading = false;
-      this.initParallax();
-      sub.unsubscribe();
-    })
+    setTimeout( () => {
+      const sub = this.gameService.initScene(this.screenRef.nativeElement, this.racer).subscribe( () => {
+        this.isLoading = false;
+        this.initParallax();
+        sub.unsubscribe();
+      });
+    });
+
   }
 
   public backToChoice() {

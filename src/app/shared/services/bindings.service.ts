@@ -1,11 +1,17 @@
 import { Injectable } from '@angular/core';
 import { MoveAction } from '../models/racer';
 import { Subject } from 'rxjs';
+import { Stick } from '../models/stick';
+import { MathUtils } from 'three';
+import degToRad = MathUtils.degToRad;
 
 @Injectable({
   providedIn: 'root'
 })
 export class BindingsService {
+
+  private stickSubject = new Subject<Stick>();
+  public stickState = this.stickSubject.asObservable();
 
   private keydownSubject = new Subject<string>();
   public keydownState = this.keydownSubject.asObservable();
@@ -13,16 +19,11 @@ export class BindingsService {
   public inverted: boolean = false;
   public invertedTimeout: number = -1;
 
-  private ACTIONS = {
-    'GO_FORWARD': 'go_forward',
-    'GO_BACKWARD': 'go_backward',
-    'NO_GO': 'no_go',
-    'TURN_LEFT': 'turn_left',
-    'TURN_RIGHT': 'turn_right',
-    'NO_TURN': 'no_turn',
-    'JUMP': 'jump',
-    'OBJECT': 'object'
-  };
+  private stickRadius = 60;
+
+  public stick: Stick = null;
+
+  public isTouchDevice: boolean = ("ontouchstart" in document.documentElement);
 
   private BINDING_TYPE = {
     'KEYBOARD': 'keyboard',
@@ -66,6 +67,11 @@ export class BindingsService {
     }
   }
 
+  public updateStick(stick: Stick) {
+    this.stick = stick;
+    this.stickSubject.next(stick);
+  }
+
   public bindTouching(canvas: HTMLElement) {
 
     canvas.addEventListener("touchstart", (e) => {
@@ -77,6 +83,13 @@ export class BindingsService {
           this.down[68] = true;
         }
       } else {
+
+        this.updateStick({
+          begin: { x: touches.clientX, y: touches.clientY },
+          current: { x: touches.clientX, y: touches.clientY },
+          radius: this.stickRadius
+        });
+
         if(!this.directionTouches){
           this.directionTouches = touches;
         }
@@ -85,6 +98,7 @@ export class BindingsService {
 
 
     canvas.addEventListener("touchend", (e) => {
+      this.updateStick(null)
       const currentFingerReleased = e.changedTouches[0];
       if(this.driftTouches && currentFingerReleased.identifier === this.driftTouches.identifier){
         this.driftTouches = null;
@@ -102,6 +116,7 @@ export class BindingsService {
     canvas.addEventListener("touchmove", (e) => {
       const currentFingerMoved = e.changedTouches[0];
       if(this.directionTouches && currentFingerMoved.identifier === this.directionTouches.identifier){
+
         const diffX = currentFingerMoved.clientX - this.directionTouches.clientX;
         const diffY = currentFingerMoved.clientY - this.directionTouches.clientY;
         const angle = Math.asin( diffY / Math.sqrt((diffX*diffX)+(diffY*diffY))) * 180 / Math.PI;
@@ -112,6 +127,25 @@ export class BindingsService {
         } else {
           computedAngle = (360 + angle) % 360;
         }
+
+
+        if(this.stick) {
+          const dist = Math.sqrt( Math.pow(this.stick.begin.x - currentFingerMoved.clientX, 2) + Math.pow(this.stick.begin.y - currentFingerMoved.clientY, 2));
+          if(dist > this.stick.radius -10) {
+            const x = Math.cos(degToRad(computedAngle)) * (-this.stick.radius+10);
+            const y = Math.sin(degToRad(computedAngle)) * (this.stick.radius-10);
+            this.updateStick({
+              ...this.stick,
+              current: { x: x + this.stick.begin.x, y: y + this.stick.begin.y }
+            });
+          } else {
+            this.updateStick({
+              ...this.stick,
+              current: { x: currentFingerMoved.clientX, y: currentFingerMoved.clientY }
+            });
+          }
+        }
+
 
         this.down[37] = false;
         this.down[38] = false;

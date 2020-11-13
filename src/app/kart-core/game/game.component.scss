@@ -146,9 +146,22 @@
         width: 20px;
       }
 
+
+      @media(max-height: 600px) {
+        bottom: auto;
+        top: 10px;
+
+        &.site {
+          top: 60px;
+        }
+      }
+
       span {
         margin-left: 10px;
 
+        @media(max-height: 600px) {
+          display: none;
+        }
         @media(max-width: 600px) {
           display: none;
         }

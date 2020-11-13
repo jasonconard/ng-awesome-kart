@@ -17,6 +17,7 @@ import { HttpClientModule } from '@angular/common/http';
 import { TimePipe } from './shared/pipes/time.pipe';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { PopResultComponent } from './kart-core/pop-result/pop-result.component';
+import { StickComponent } from './kart-core/stick/stick.component';
 
 
 @NgModule({
@@ -32,7 +33,8 @@ import { PopResultComponent } from './kart-core/pop-result/pop-result.component'
     PageFooterComponent,
     PopResultComponent,
     AboutComponent,
-    TimePipe
+    TimePipe,
+    StickComponent
   ],
   imports: [
     BrowserModule,
