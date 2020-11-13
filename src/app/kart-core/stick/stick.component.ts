@@ -32,7 +32,7 @@ export class StickComponent implements OnInit, OnDestroy {
       width: (this.stick.radius*2) + 'px',
       height: (this.stick.radius*2) + 'px',
       left: (this.stick.begin.x - this.stick.radius) + 'px',
-      top: (this.stick.begin.y - this.stick.radius) + 'px'
+      top: (this.stick.begin.y - this.stick.radius - 10) + 'px'
     };
   }
 

@@ -57,9 +57,9 @@
     .received-items {
       position: absolute;
       left: 0;
-      top: 0;
+      top: 90px;
       width: 100%;
-      height: 60%;
+      height: calc(60% - 90px);
       text-align: center;
       z-index: 3;
       display: flex;
@@ -150,6 +150,7 @@
       @media(max-height: 600px) {
         bottom: auto;
         top: 10px;
+        left: unquote('calc(10px + env(safe-area-inset-left))');
 
         &.site {
           top: 60px;

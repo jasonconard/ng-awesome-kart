@@ -11,6 +11,7 @@ import { InitService } from './shared/services/init.service';
 export class AppComponent implements OnInit{
 
   public deviceFullscreenEnabled: boolean = false;
+  public canFullscreen: boolean = document.documentElement.requestFullscreen || document.documentElement['webkitRequestFullScreen'] || document.documentElement['mozRequestFullScreen'] || document.documentElement['msRequestFullscreen'];
 
   public forcedFullscreen: boolean = false;
 
@@ -49,12 +50,12 @@ export class AppComponent implements OnInit{
 
   toggleFullscreen() {
     if(this.deviceFullscreenEnabled) {
-      const rfs = document.exitFullscreen || document['webkitExitFullscreen'] || document['mozCancelFullScreen'] || document['msExitFullscreen'];
+      const rfs = document.exitFullscreen || document['webkitCancelFullScreen'] || document['mozCancelFullScreen'] || document['msExitFullscreen'];
       rfs.call(document);
       this.deviceFullscreenEnabled = false;
     } else {
       const el = document.documentElement;
-      const rfs = el.requestFullscreen || el['webkitRequestFullscreen'] || el['mozRequestFullScreen'] || el['msRequestFullscreen'];
+      const rfs = el.requestFullscreen || el['webkitRequestFullScreen'] || el['mozRequestFullScreen'] || el['msRequestFullscreen'];
       rfs.call(el);
       this.deviceFullscreenEnabled = true;
     }

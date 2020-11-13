@@ -112,8 +112,8 @@ export class BindingsService {
         this.down[40] = false;
       }
     }, false);
-
     canvas.addEventListener("touchmove", (e) => {
+      if (e['scale'] !== 1) { e.preventDefault(); }
       const currentFingerMoved = e.changedTouches[0];
       if(this.directionTouches && currentFingerMoved.identifier === this.directionTouches.identifier){
 
@@ -182,7 +182,7 @@ export class BindingsService {
         }
 
       }
-    }, false);
+    }, { passive: false });
   }
 
   /**
