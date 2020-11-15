@@ -1,10 +1,10 @@
 import { Component, OnDestroy, OnInit } from '@angular/core';
 import { Subscription } from 'rxjs';
-import { Stick } from '../../shared/models/stick';
-import { BindingsService } from '../../shared/services/bindings.service';
+import { Stick } from '../shared/models/stick';
+import { ControlsService } from '../shared/services/controls.service';
 
 @Component({
-  selector: 'app-stick',
+  selector: 'kart-stick',
   templateUrl: './stick.component.html',
   styleUrls: ['./stick.component.scss']
 })
@@ -14,10 +14,10 @@ export class StickComponent implements OnInit, OnDestroy {
 
   public stick: Stick = null;
 
-  constructor(private bindingsService: BindingsService) { }
+  constructor(private controlsService: ControlsService) { }
 
   ngOnInit(): void {
-    this.subs.push(this.bindingsService.stickState.subscribe(stick => {
+    this.subs.push(this.controlsService.stickState.subscribe(stick => {
       this.stick = stick;
     }));
   }

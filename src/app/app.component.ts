@@ -1,7 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute, NavigationEnd, Router } from '@angular/router';
 import { FooterBtn } from './shared/models/footerBtn';
-import { InitService } from './shared/services/init.service';
+import { InitService } from './modules/kart/shared/services/init.service';
 
 @Component({
   selector: 'app-root',

@@ -26,7 +26,7 @@ import { map } from 'rxjs/operators';
 import { DriverService } from './driver.service';
 import { Item, ItemType } from '../models/item';
 import { RacerItem } from '../models/racerItem';
-import { BindingsService } from './bindings.service';
+import { ControlsService } from './controls.service';
 
 @Injectable({
   providedIn: 'root'
@@ -34,7 +34,7 @@ import { BindingsService } from './bindings.service';
 export class RacerService {
 
   constructor(private circuitService: CircuitService,
-              private bindingsService: BindingsService,
+              private controlsService: ControlsService,
               private driverService: DriverService) { }
 
 
@@ -144,7 +144,7 @@ export class RacerService {
           receivedItem.effect = '+' + item.value + 'pt' + (item.value > 1 ? 's': '');
           break;
         case ItemType.invert:
-          this.bindingsService.invertBindings(item.duration);
+          this.controlsService.invertBindings(item.duration);
           receivedItem.effectClass = 'supermalus';
           receivedItem.effect = 'inversion!!';
           break;

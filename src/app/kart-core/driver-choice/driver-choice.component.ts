@@ -1,14 +1,14 @@
-import { Component, ElementRef, NgZone, OnDestroy, OnInit, ViewChild } from '@angular/core';
+import { Component, ElementRef, OnDestroy, OnInit, ViewChild } from '@angular/core';
 import { fromEvent, Subscription } from 'rxjs';
-import { DriverService } from '../../shared/services/driver.service';
-import { Driver } from '../../shared/models/driver';
+import { DriverService } from '../../modules/kart/shared/services/driver.service';
+import { Driver } from '../../modules/kart/shared/models/driver';
 import { FooterService } from '../../shared/services/footer.service';
 import { FooterAction } from '../../shared/models/footerBtn';
 import { Router } from '@angular/router';
-import { GameService } from '../../shared/services/game.service';
-import { BindingsService } from '../../shared/services/bindings.service';
+import { GameService } from '../../modules/kart/shared/services/game.service';
 import { animate, style, transition, trigger } from '@angular/animations';
-import { InitService } from '../../shared/services/init.service';
+import { InitService } from '../../modules/kart/shared/services/init.service';
+import { ControlsService } from '../../modules/kart/shared/services/controls.service';
 
 interface PlayerGrid {
   nbItemPerRow: number,
@@ -64,7 +64,7 @@ export class DriverChoiceComponent implements OnInit, OnDestroy {
               private gameService: GameService,
               private initService: InitService,
               private router: Router,
-              private bindingsService: BindingsService,
+              private controlsService: ControlsService,
               private footerService: FooterService) { }
 
   ngOnInit(): void {
@@ -82,7 +82,7 @@ export class DriverChoiceComponent implements OnInit, OnDestroy {
       }
     }));
 
-    this.subs.push(this.bindingsService.keydownState.subscribe(keyCode => {
+    this.subs.push(this.controlsService.keydownState.subscribe(keyCode => {
       this.manageKeyboard(keyCode);
     }));
 
@@ -95,7 +95,7 @@ export class DriverChoiceComponent implements OnInit, OnDestroy {
       this.updatePlayerGrid();
     }));
 
-    if(!this.bindingsService.isTouchDevice) {
+    if(!this.controlsService.isTouchDevice) {
       this.nameInput.nativeElement.focus();
     }
   }

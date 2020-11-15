@@ -1,6 +1,6 @@
 import { Component, Input, OnChanges, OnInit, SimpleChanges } from '@angular/core';
-import { Driver } from '../../shared/models/driver';
-import { animate, style, transition, trigger } from '@angular/animations';
+import { Driver } from '../../modules/kart/shared/models/driver';
+import { STATS_MAX } from '../../modules/kart/kart.constants';
 
 @Component({
   selector: 'app-driver-stats',
@@ -12,11 +12,15 @@ export class DriverStatsComponent implements OnInit, OnChanges {
   @Input() driver: Driver = null;
 
   public statsList: { label: string, value: number }[] = [];
-  public valueCells = [1,2,3,4,5,6,7];
+  public valueCells = [];
 
   constructor() { }
 
   ngOnInit(): void {
+    this.valueCells = [];
+    for(let i = 1; i < STATS_MAX; i++) {
+      this.valueCells.push(i);
+    }
     this.initDriver();
   }
 

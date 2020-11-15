@@ -9,7 +9,6 @@
 }
 .stick-circle {
   border-radius: 50%;
-  //border: 1px solid white;
   position: absolute;
   display: flex;
   justify-content: center;
@@ -17,13 +16,6 @@
 
   background: radial-gradient(rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0.3));
   box-shadow: 0 0 2px rgba(255, 255, 255, 0.4);
-
-  .stick-center {
-    width: 24px;
-    height: 24px;
-    background: #fafafa;
-    border-radius: 50%;
-  }
 
   .stick-current {
     position: absolute;

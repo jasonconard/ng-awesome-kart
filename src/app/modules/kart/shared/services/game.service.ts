@@ -1,25 +1,27 @@
 import { Injectable } from '@angular/core';
 import { DriftFire, MoveAction, Racer, RACER_PICS, RacerStatus, RotateDirection } from '../models/racer';
 import { DirectionalLight, PerspectiveCamera, Scene, Vector2, Vector3, WebGLRenderer } from 'three';
-import { forkJoin, fromEvent, Observable, Observer, Subscription } from 'rxjs';
+import { forkJoin, fromEvent, Observable, Observer, Subject, Subscription } from 'rxjs';
 import { StereoEffect } from 'three/examples/jsm/effects/StereoEffect';
-import { BindingsService } from './bindings.service';
 import { CircuitService } from './circuit.service';
 import { map } from 'rxjs/operators';
 import { RacerService } from './racer.service';
 import { ItemService } from './item.service';
-import { CookieService } from './cookie.service';
+import { CookieService } from '../../../../shared/services/cookie.service';
+import { ControlsService } from './controls.service';
+import { ControlsType } from '../enums/controls';
+import { CAMERA_BACK, CAMERA_FOCUS, CAMERA_MAX, OBJECTIVE, TIME_LIMIT } from '../../kart.constants';
+import { RacerResult } from '../models/racerResult';
 
 @Injectable({
   providedIn: 'root'
 })
 export class GameService {
 
-  private resizeSub: Subscription = null;
+  private resultSubject = new Subject<RacerResult>();
+  public resultState = this.resultSubject.asObservable();
 
-  private CAMERA_FOCUS = 80;
-  private CAMERA_MAX = 2500;
-  private CAMERA_BACK = -8;
+  private resizeSub: Subscription = null;
 
   private container: HTMLElement;
 
@@ -51,17 +53,17 @@ export class GameService {
   private animation: number;
 
   private finalPoints: number;
-  public timeLimit: number = 90;
+  public timeLimit: number = TIME_LIMIT;
   private bonusTime: number;
-  private objective: number = 700;
+  private objective: number = OBJECTIVE;
   private lose: boolean;
   private win: boolean;
 
   public playerName: string = "";
 
-  constructor(private bindingsService: BindingsService,
-              private racerService: RacerService,
+  constructor(private racerService: RacerService,
               private itemService: ItemService,
+              private controlsService: ControlsService,
               private circuitService: CircuitService) { }
 
   setPlayerName(playerName: string) {
@@ -76,10 +78,10 @@ export class GameService {
 
       this.beginTime = new Date().getTime();
 
-      this.camera = new PerspectiveCamera(100, this.container.clientWidth / this.container.clientHeight, 1, this.CAMERA_MAX);
+      this.camera = new PerspectiveCamera(100, this.container.clientWidth / this.container.clientHeight, 1, CAMERA_MAX);
       this.camera.position.set(0, 0, racer.z);
       this.camera.up = new Vector3(0,0,1);
-      this.camera.lookAt(new Vector3(0, this.CAMERA_FOCUS, 0));
+      this.camera.lookAt(new Vector3(0, CAMERA_FOCUS, 0));
 
       if(this.resizeSub) {
         this.resizeSub.unsubscribe();
@@ -87,10 +89,6 @@ export class GameService {
       this.resizeSub = fromEvent(window, 'resize').subscribe( () => {
         this.onWindowResize();
       });
-
-      // setInterval( () => {
-      //   console.log('(' + this.camera.position.x + ', ' + this.camera.position.y + ')');
-      // }, 400);
 
       const directionalLight = new DirectionalLight( 0xffffff, 0.9 );
       directionalLight.position.y = -750;
@@ -114,7 +112,7 @@ export class GameService {
         container.appendChild( this.threeCanvas );
         this.threeCanvas.style.zIndex = '13';
 
-        this.bindingsService.bindTouching(this.threeCanvas);
+        this.controlsService.bindTouching(this.threeCanvas);
 
         this.startAnimate();
 
@@ -125,8 +123,6 @@ export class GameService {
   }
 
   private onWindowResize() {
-    //window.addEventListener( 'resize', onWindowResize, false );
-
     this.camera.aspect = this.container.clientWidth / this.container.clientHeight;
     this.camera.updateProjectionMatrix();
     this.renderer.setSize( this.container.clientWidth, this.container.clientHeight );
@@ -175,18 +171,10 @@ export class GameService {
       clearInterval(this.physicsInterval);
       this.physicsInterval = -1;
     }
-    //if(this.backgroundRefreshInterval >= 0){
-    //  clearInterval(this.backgroundRefreshInterval)
-    //  this.backgroundRefreshInterval = -1;
-    //}
 
     this.physicsInterval = setInterval( () => {
       this.updatePhysics();
     }, 1000/60);
-    //this.backgroundRefreshInterval = setInterval( () => {
-    //  this.updateBackgroundRotation();
-    //}, 1000/60);
-
 
     this.animate();
   }
@@ -224,13 +212,13 @@ export class GameService {
 
       driverPlane.rotation.y = (this.racer.rotation-180) * Math.PI / 180;
 
-      this.camera.position.x = driverObj.position.x + (this.CAMERA_BACK * Math.cos(angle));
-      this.camera.position.y = driverObj.position.y + (this.CAMERA_BACK * Math.sin(angle));
+      this.camera.position.x = driverObj.position.x + (CAMERA_BACK * Math.cos(angle));
+      this.camera.position.y = driverObj.position.y + (CAMERA_BACK * Math.sin(angle));
 
 
       const lookAt = {
-        x: driverObj.position.x + (this.CAMERA_FOCUS * Math.cos(angle)),
-        y: driverObj.position.y + (this.CAMERA_FOCUS * Math.sin(angle)),
+        x: driverObj.position.x + (CAMERA_FOCUS * Math.cos(angle)),
+        y: driverObj.position.y + (CAMERA_FOCUS * Math.sin(angle)),
         z: this.racer.z - 8
       };
 
@@ -290,6 +278,8 @@ export class GameService {
         objectivePts: this.objective
       };
 
+      this.resultSubject.next(this.racer.racerResult);
+
       if(this.finalPoints < this.objective){
         this.lose = true;
       } else {
@@ -306,7 +296,7 @@ export class GameService {
 
   private updatePhysics(){
 
-    var actions = this.bindingsService.getAction();
+    const actions = this.controlsService.getAction();
 
 
     if(actions[MoveAction.go_backward]) {
@@ -363,10 +353,10 @@ export class GameService {
     this.stereoEnabled = !this.stereoEnabled;
 
     if(!this.stereoEnabled){
-      this.bindingsService.setMode(window['cordova'] ? 'touchscreen' : 'keyboard');
+      this.controlsService.setMode(window['cordova'] ? ControlsType.touchscreen : ControlsType.keyboard);
       this.renderer.setSize( window.innerWidth, window.innerHeight );
     } else {
-      this.bindingsService.setMode('cardboard');
+      this.controlsService.setMode(ControlsType.cardboard);
     }
 
   }
@@ -500,20 +490,15 @@ export class GameService {
     this.stereoEnabled = false;
 
     this.finished = false;
-    //this.controllerClosed: boolean;
     this.animation = 0;
 
     this.finalPoints = 0;
-    this.timeLimit = 90;
+    this.timeLimit = TIME_LIMIT;
     this.bonusTime = 0
-    this.objective = 700;
+    this.objective = OBJECTIVE;
     this.lose = false;
     this.win = false;
 
-  }
-
-  private setBinding(type, value){
-    this.bindingsService.setBind(type, value);
   }
 
 }

@@ -3,17 +3,19 @@ import { MoveAction } from '../models/racer';
 import { Subject } from 'rxjs';
 import { Stick } from '../models/stick';
 import { MathUtils } from 'three';
+import { ControlsKey, ControlsType } from '../enums/controls';
+import { RotateDirection } from '../models/racer';
 import degToRad = MathUtils.degToRad;
 
 @Injectable({
   providedIn: 'root'
 })
-export class BindingsService {
+export class ControlsService {
 
   private stickSubject = new Subject<Stick>();
   public stickState = this.stickSubject.asObservable();
 
-  private jumpPushedSubject = new Subject<any>();
+  private jumpPushedSubject = new Subject<boolean>();
   public jumpPushedState = this.jumpPushedSubject.asObservable();
 
   private keydownSubject = new Subject<string>();
@@ -28,13 +30,6 @@ export class BindingsService {
 
   public isTouchDevice: boolean = ("ontouchstart" in document.documentElement);
 
-  private BINDING_TYPE = {
-    'KEYBOARD': 'keyboard',
-    'KEYBOARD_INVERTED': 'keyboard_inverted',
-    'TOUCHSCREEN': 'touchscreen',
-    'CARDBOARD': 'cardboard'
-  };
-
   private GO_FORWARD_ACC = 3;
   private GO_BACKWARD_ACC = 6;
   private GO_FORWARD_CB = 1;
@@ -43,7 +38,7 @@ export class BindingsService {
   private directionTouches = null;
   private driftTouches = null;
 
-  public mode: string = this.BINDING_TYPE.KEYBOARD;
+  public mode: ControlsType = ControlsType.keyboard;
   public orientation = screen.orientation ? screen.orientation.angle : 180;
 
   public accelerometer = null;
@@ -52,13 +47,31 @@ export class BindingsService {
   constructor() {
     document.addEventListener('keydown', (e) => {
       this.keydownSubject.next(e.code);
-      this.down[e.which] = true;
+      const key: ControlsKey = this.getKeyFromKeyboardEvent(e);
+      if(key !== null) {
+        this.down[key] = true;
+      }
+      //this.down[e.which] = true;
 
     });
 
     document.addEventListener('keyup', (e) => {
-      this.down[e.which] = false;
+      const key: ControlsKey = this.getKeyFromKeyboardEvent(e);
+      if(key !== null) {
+        this.down[key] = false;
+      }
     });
+  }
+
+  getKeyFromKeyboardEvent(e: KeyboardEvent): ControlsKey {
+    switch (e.code) {
+      case 'ArrowUp': return ControlsKey.arrow_up;
+      case 'ArrowDown': return ControlsKey.arrow_down;
+      case 'ArrowLeft': return ControlsKey.arrow_left;
+      case 'ArrowRight': return ControlsKey.arrow_right;
+      case 'KeyD': return ControlsKey.jump;
+    }
+    return null;
   }
 
   public invertBindings(duration: number){
@@ -87,7 +100,7 @@ export class BindingsService {
       if(touches.clientX > canvasWidth / 2) {
         if(!this.driftTouches){
           this.driftTouches = touches;
-          this.down[68] = true;
+          this.down[ControlsKey.jump] = true;
           this.updateJump(true);
         }
       } else {
@@ -110,18 +123,19 @@ export class BindingsService {
       const currentFingerReleased = e.changedTouches[0];
       if(this.driftTouches && currentFingerReleased.identifier === this.driftTouches.identifier){
         this.driftTouches = null;
-        this.down[68] = false;
+        this.down[ControlsKey.jump] = false;
 
         this.updateJump(false);
       }
       if(this.directionTouches && currentFingerReleased.identifier === this.directionTouches.identifier){
         this.directionTouches = null;
-        this.down[37] = false;
-        this.down[38] = false;
-        this.down[39] = false;
-        this.down[40] = false;
+        this.down[ControlsKey.arrow_left] = false;
+        this.down[ControlsKey.arrow_right] = false;
+        this.down[ControlsKey.arrow_up] = false;
+        this.down[ControlsKey.arrow_down] = false;
       }
     }, false);
+
     canvas.addEventListener("touchmove", (e) => {
       if (e['scale'] !== 1) { e.preventDefault(); }
       const currentFingerMoved = e.changedTouches[0];
@@ -157,38 +171,38 @@ export class BindingsService {
         }
 
 
-        this.down[37] = false;
-        this.down[38] = false;
-        this.down[39] = false;
-        this.down[40] = false;
+        this.down[ControlsKey.arrow_left] = false;
+        this.down[ControlsKey.arrow_right] = false;
+        this.down[ControlsKey.arrow_up] = false;
+        this.down[ControlsKey.arrow_down] = false;
 
         // SOUTH WEST
         if(computedAngle >= 0 && computedAngle < 67.5) {
-          this.down[37] = true;
-          this.down[40] = true;
+          this.down[ControlsKey.arrow_left] = true;
+          this.down[ControlsKey.arrow_down] = true;
         }
         // SOUTH
         if(computedAngle >= 67.5 && computedAngle < 112.5) {
-          this.down[40] = true;
+          this.down[ControlsKey.arrow_down] = true;
         }
         // SOUTH EAST
         if(computedAngle >= 112.5 && computedAngle < 180) {
-          this.down[40] = true;
-          this.down[39] = true;
+          this.down[ControlsKey.arrow_down] = true;
+          this.down[ControlsKey.arrow_right] = true;
         }
         // NORTH EAST
         if(computedAngle >= 180 && computedAngle < 247.5) {
-          this.down[39] = true;
-          this.down[38] = true;
+          this.down[ControlsKey.arrow_right] = true;
+          this.down[ControlsKey.arrow_up] = true;
         }
         // NORTH
         if(computedAngle >= 247.5 && computedAngle < 292.5) {
-          this.down[38] = true;
+          this.down[ControlsKey.arrow_up] = true;
         }
         // NORTH WEST
         if(computedAngle >= 292.5 && computedAngle < 360) {
-          this.down[38] = true;
-          this.down[37] = true;
+          this.down[ControlsKey.arrow_up] = true;
+          this.down[ControlsKey.arrow_left] = true;
         }
 
       }
@@ -197,47 +211,45 @@ export class BindingsService {
 
   /**
    * Set a bind for actions (useful for touchscreen btn)
-   * @param input : string
+   * @param input : ControlsKey
    * @param status : boolean
    */
-  public setBind(input: string, status: boolean){
+  public setBind(input: ControlsKey, status: boolean){
     this.down[input] = status;
   }
 
-  public setMode(mode: string){
+  public setMode(mode: ControlsType){
     this.mode = mode;
   }
 
   public getAction(){
-    let actions = {};
+    let actions:{ [ key:string ]: boolean } = {};
     let rotation = null;
 
-    if(this.mode === this.BINDING_TYPE.KEYBOARD){
-      if(this.down[this.inverted ? 40 : 38]){
+    if(this.mode === ControlsType.keyboard){
+      if(this.down[this.inverted ? ControlsKey.arrow_down : ControlsKey.arrow_up]){
         actions[MoveAction.go_forward] = true;
-      } else if(this.down[this.inverted ? 38 : 40]){
+      } else if(this.down[this.inverted ? ControlsKey.arrow_up : ControlsKey.arrow_down]){
         actions[MoveAction.go_backward] = true;
       } else {
         actions[MoveAction.no_move] = true;
       }
 
-      if(this.down[this.inverted ? 39 : 37]){
+      if(this.down[this.inverted ? ControlsKey.arrow_right : ControlsKey.arrow_left]){
         actions[MoveAction.turn_left] = true;
-      } else if(this.down[this.inverted ? 37 : 39]){
+      } else if(this.down[this.inverted ? ControlsKey.arrow_left : ControlsKey.arrow_right]){
         actions[MoveAction.turn_right] = true;
       } else {
         actions[MoveAction.no_turn] = true;
       }
 
-      if(this.down[68]){
+      if(this.down[ControlsKey.jump]){
         actions[MoveAction.jump] = true;
       }
 
-      // TODO OBJ BIND
+    }else if(this.mode === ControlsType.keyboard_inverted){
 
-    }else if(this.mode === this.BINDING_TYPE.KEYBOARD_INVERTED){
-
-    }else if(this.mode === this.BINDING_TYPE.TOUCHSCREEN){
+    }else if(this.mode === ControlsType.touchscreen){
       if(this.accelerometer){
         if(this.accelerometer.z < this.GO_FORWARD_ACC){
           actions[MoveAction.go_backward] = true;
@@ -248,24 +260,24 @@ export class BindingsService {
         }
 
         rotation = this.getCurrentRotation();
-        if(rotation && rotation.turn === "left"){
+        if(rotation && rotation.turn === RotateDirection.left){
           actions[MoveAction.turn_left] = true;
-        } else if(rotation && rotation.turn === "right"){
+        } else if(rotation && rotation.turn === RotateDirection.right){
           actions[MoveAction.turn_right] = true;
         } else {
           actions[MoveAction.no_turn] = true;
         }
       }
 
-      if(this.down['jump']){
+      if(this.down[ControlsKey.jump]){
         actions[MoveAction.jump] = true;
       }
 
-      if(this.down['object']){
+      if(this.down[ControlsKey.obj]){
         actions[MoveAction.object] = true;
       }
 
-    } else if(this.mode === this.BINDING_TYPE.CARDBOARD){
+    } else if(this.mode === ControlsType.cardboard){
       if(this.accelerometer){
         if(this.accelerometer.z < this.GO_FORWARD_CB){
           actions[MoveAction.go_backward] = true;
@@ -276,20 +288,20 @@ export class BindingsService {
         }
 
         rotation = this.getCurrentRotation();
-        if(rotation && rotation.turn === "left"){
+        if(rotation && rotation.turn === RotateDirection.left){
           actions[MoveAction.turn_left] = true;
-        } else if(rotation && rotation.turn === "right"){
+        } else if(rotation && rotation.turn === RotateDirection.right){
           actions[MoveAction.turn_right] = true;
         } else {
           actions[MoveAction.no_turn] = true;
         }
       }
 
-      if(this.down['jump_cardboard']){
+      if(this.down[ControlsKey.jump]){
         actions[MoveAction.jump] = true;
       }
 
-      if(this.down['object']){
+      if(this.down[ControlsKey.obj]){
         actions[MoveAction.object] = true;
       }
 
@@ -298,41 +310,41 @@ export class BindingsService {
     return actions;
   }
 
-  public getCurrentRotation(){
+  public getCurrentRotation(): { turn: RotateDirection, ratio: number } {
 
     this.orientation = screen.orientation ? screen.orientation.angle : 180;
     if(!this.accelerometer) return null;
     if(this.orientation === 90){
       if(this.accelerometer.y < -1){
-        return { turn: 'left', ratio: Math.abs(this.accelerometer.y+1) };
+        return { turn: RotateDirection.left, ratio: Math.abs(this.accelerometer.y+1) };
       }
       if(this.accelerometer.y > 1){
-        return { turn: 'right', ratio: Math.abs(this.accelerometer.y-1) };
+        return { turn: RotateDirection.right, ratio: Math.abs(this.accelerometer.y-1) };
       }
     }
     if(this.orientation === 270){
       if(this.accelerometer.y > 1){
-        return { turn: 'left', ratio: Math.abs(this.accelerometer.y-1) };
+        return { turn: RotateDirection.left, ratio: Math.abs(this.accelerometer.y-1) };
       }
       if(this.accelerometer.y < -1){
-        return { turn: 'right', ratio: Math.abs(this.accelerometer.y+1) };
+        return { turn: RotateDirection.right, ratio: Math.abs(this.accelerometer.y+1) };
       }
     }
 
     if(this.orientation === 180){
       if(this.accelerometer.x < -1){
-        return { turn: 'left', ratio: Math.abs(this.accelerometer.x+1) };
+        return { turn: RotateDirection.left, ratio: Math.abs(this.accelerometer.x+1) };
       }
       if(this.accelerometer.x > 1){
-        return { turn: 'right', ratio: Math.abs(this.accelerometer.x-1) };
+        return { turn: RotateDirection.right, ratio: Math.abs(this.accelerometer.x-1) };
       }
     }
     if(this.orientation === 0){
       if(this.accelerometer.x > 1){
-        return { turn: 'left', ratio: Math.abs(this.accelerometer.x-1) };
+        return { turn: RotateDirection.left, ratio: Math.abs(this.accelerometer.x-1) };
       }
       if(this.accelerometer.x < -1){
-        return { turn: 'right', ratio: Math.abs(this.accelerometer.x+1) };
+        return { turn: RotateDirection.right, ratio: Math.abs(this.accelerometer.x+1) };
       }
     }
 

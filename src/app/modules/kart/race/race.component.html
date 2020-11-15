@@ -1,0 +1,63 @@
+<div class="game-loading" *ngIf="isLoading">
+  Chargement en cours ...
+</div>
+
+<div class="game-content" [class.hidden]="isLoading">
+
+<!--  <div id="debug-values" *ngIf="debug">-->
+    <!--ax: {{kt.accelerometer.x | number:3}}-->
+    <!--<br/>ay: {{kt.accelerometer.y | number:3}}-->
+    <!--<br/>az: {{kt.accelerometer.z | number:3}}-->
+
+<!--    time: {{kt.totalTime | timeFilter}}-->
+<!--    <br/>acc: {{kt.racer.accelerationLevel | number:3}}-->
+<!--    <br/>speed: {{kt.racer.speed | number:3}}-->
+<!--    <br/>rotation: {{kt.racer.rotation | number:3}}-->
+<!--    <br/>speed: {{kt.racer.speed*40 | number:0}}km/h-->
+<!--    <br/>ground: {{kt.racer.ground | number:3}}-->
+<!--    <br/>fps: {{kt.averageFPS}}-->
+<!--    <br/>status: {{kt.racer.status}}-->
+<!--    <br/>direction: {{kt.racer.driftDirection}}-->
+<!--    <br/>rotatedir: {{kt.racer.rotateDirection}}-->
+<!--    <br/>bonus: {{kt.racer.bonus}}-->
+<!--    <br/>cp: {{kt.racer.nbCp}}-->
+<!--    <br/>turn: {{kt.racer.turn}}-->
+<!--    <br/>points: {{kt.racer.points}}-->
+<!--  </div>-->
+
+  <div class="score-panel" *ngIf="racer">
+    <div class="score">
+      score: {{racer.points}} pt{{racer.points > 1?'s':''}}
+    </div>
+    <div class="time">
+      {{racer.totalTime | time}}
+    </div>
+  </div>
+  <div class="received-items" *ngIf="racer">
+    <div class="received-item" *ngFor="let item of racer.receivedItems" @itemAppear>
+      <img [src]="item.img"/> {{item.libelle}} <span [ngClass]="item.effectClass">{{item.effect}}</span>
+    </div>
+  </div>
+  <div class="objective-panel" *ngIf="racer">
+    <div class="score">
+      objectif: {{objective}} pt{{objective > 1?'s':''}}<br/>
+      temps: {{timeLimit | time}}
+    </div>
+  </div>
+
+  <div class="game-screen"
+       #screen
+       [ngStyle]="circuitBack">
+<!--    <div class="game-screen-scanlines"></div>-->
+    <kart-stick *ngIf="isTouchScreen"></kart-stick>
+
+    <div class="jump-button" *ngIf="isTouchScreen">
+      <div class="jump-button-content" [class.pushed]="jumpButtonPushed">
+        JUMP
+      </div>
+    </div>
+
+    <div class="screen-parallax" #parallax></div>
+
+  </div>
+</div>

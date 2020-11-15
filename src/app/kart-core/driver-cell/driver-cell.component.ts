@@ -1,5 +1,5 @@
 import { Component, Input, OnDestroy, OnInit } from '@angular/core';
-import { Driver } from '../../shared/models/driver';
+import { Driver } from '../../modules/kart/shared/models/driver';
 
 @Component({
   selector: 'app-driver-cell',
