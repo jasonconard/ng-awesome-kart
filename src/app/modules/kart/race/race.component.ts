@@ -1,15 +1,13 @@
-import { Component, ElementRef, EventEmitter, OnDestroy, OnInit, Output, ViewChild } from '@angular/core';
+import { Component, ElementRef, EventEmitter, Input, OnDestroy, OnInit, Output, ViewChild } from '@angular/core';
 import { animate, style, transition, trigger } from '@angular/animations';
 import { Subscription } from 'rxjs';
-import { Driver } from '../shared/models/driver';
-import { Circuit } from '../shared/models/circuit';
-import { Racer } from '../shared/models/racer';
 import { DriverService } from '../shared/services/driver.service';
 import { CircuitService } from '../shared/services/circuit.service';
 import { GameService } from '../shared/services/game.service';
 import { ControlsService } from '../shared/services/controls.service';
 import { RaceService } from '../shared/services/race.service';
-import { OBJECTIVE } from '../kart.constants';
+import { Race } from '../shared/models/race';
+import { Rules } from '../shared/models/rules';
 
 @Component({
   selector: 'kart-race',
@@ -37,16 +35,13 @@ export class RaceComponent implements OnInit, OnDestroy {
 
   @Output() onExit = new EventEmitter<any>();
 
-  public driver: Driver = null;
-  public circuit: Circuit = null;
-  public racer: Racer = null;
+  @Input() rules: Rules = null;
+
+  public race: Race = null;
 
   public isLoading: boolean = true;
 
   public circuitBack: any = {};
-
-  public objective = OBJECTIVE;
-  public timeLimit: number = this.gameService.timeLimit;
 
   public isTouchScreen: boolean = this.controlsService.isTouchDevice;
 
@@ -65,12 +60,23 @@ export class RaceComponent implements OnInit, OnDestroy {
   }
 
   ngOnInit(): void {
+    if(!this.rules) {
+      // Fallback rules
+      this.rules = {
+        pts: 700,
+        time: 90,
+        timeValue: 2,
+        turns: 1,
+        difficulty: 180
+      }
+    }
+
     this.subs.push(this.raceService.loadingState.subscribe(loading => {
       this.isLoading = loading;
     }));
 
-    this.subs.push(this.raceService.racerState.subscribe(racer => {
-      this.racer = racer;
+    this.subs.push(this.raceService.raceState.subscribe(race => {
+      this.race = race;
     }));
 
     this.subs.push(this.controlsService.jumpPushedState.subscribe(pushed => {
@@ -81,17 +87,17 @@ export class RaceComponent implements OnInit, OnDestroy {
   }
 
   private init() {
-    this.driver = this.driverService.currentDriver;
-    this.circuit = this.circuitService.currentCircuit;
+    const driver = this.driverService.currentDriver;
+    const circuit = this.circuitService.currentCircuit;
 
-    if(!this.driver || !this.circuit) {
+    if(!driver || !circuit) {
       this.onExit.emit();
       return;
     }
 
-    this.circuitBack = { background: this.circuit.bgColor };
+    this.circuitBack = { background: circuit.bgColor };
 
-    this.raceService.initRace(this.screenRef.nativeElement, this.parallaxRef.nativeElement);
+    this.raceService.initRace(this.screenRef.nativeElement, this.parallaxRef.nativeElement, this.rules);
   }
 
 }

@@ -1,4 +1,4 @@
-import { RacerResult, ResultAction } from '../../modules/kart/shared/models/racerResult';
+import { RaceResult } from '../../modules/kart/shared/models/raceResult';
 import { FooterAction } from '../../shared/models/footerBtn';
 import { MSG_TWITTER, URL_JOB } from '../../app.constants';
 import { Component, OnDestroy, OnInit } from '@angular/core';
@@ -6,6 +6,8 @@ import { FooterService } from '../../shared/services/footer.service';
 import { RaceService } from '../../modules/kart/shared/services/race.service';
 import { Subscription } from 'rxjs';
 import { GameService } from '../../modules/kart/shared/services/game.service';
+import { ResultAction } from '../../shared/models/raceResultBtn';
+import { Rules } from '../../modules/kart/shared/models/rules';
 
 @Component({
   selector: 'app-game',
@@ -16,7 +18,8 @@ export class GameComponent implements OnInit, OnDestroy {
 
   private subs: Subscription[] = [];
 
-  public result: RacerResult = null;
+  public result: RaceResult = null;
+  public rules: Rules = null;
 
   constructor(private footerService: FooterService,
               private gameService: GameService,
@@ -26,6 +29,14 @@ export class GameComponent implements OnInit, OnDestroy {
     this.subs.push(this.gameService.resultState.subscribe( result => {
       this.result = result;
     }));
+
+    this.rules = {
+      pts: 1000,
+      time: 120,
+      timeValue: 2,
+      turns: 1,
+      difficulty: 180
+    }
   }
 
   ngOnDestroy(): void {

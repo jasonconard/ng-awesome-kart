@@ -1,24 +1,23 @@
 import { Injectable } from '@angular/core';
 import { DriftFire, MoveAction, Racer, RACER_PICS, RacerStatus, RotateDirection } from '../models/racer';
-import { DirectionalLight, PerspectiveCamera, Scene, Vector2, Vector3, WebGLRenderer } from 'three';
+import { DirectionalLight, MathUtils, PerspectiveCamera, Scene, Vector2, Vector3, WebGLRenderer } from 'three';
 import { forkJoin, fromEvent, Observable, Observer, Subject, Subscription } from 'rxjs';
-import { StereoEffect } from 'three/examples/jsm/effects/StereoEffect';
 import { CircuitService } from './circuit.service';
 import { map } from 'rxjs/operators';
 import { RacerService } from './racer.service';
 import { ItemService } from './item.service';
-import { CookieService } from '../../../../shared/services/cookie.service';
 import { ControlsService } from './controls.service';
-import { ControlsType } from '../enums/controls';
-import { CAMERA_BACK, CAMERA_FOCUS, CAMERA_MAX, OBJECTIVE, TIME_LIMIT } from '../../kart.constants';
-import { RacerResult } from '../models/racerResult';
+import { CAMERA_BACK, CAMERA_FOCUS, CAMERA_HEIGHT, CAMERA_MAX, CLIPPING_DIST } from '../../kart.constants';
+import { Race } from '../models/race';
+import { RaceResult } from '../models/raceResult';
+import degToRad = MathUtils.degToRad;
 
 @Injectable({
   providedIn: 'root'
 })
 export class GameService {
 
-  private resultSubject = new Subject<RacerResult>();
+  private resultSubject = new Subject<RaceResult>();
   public resultState = this.resultSubject.asObservable();
 
   private resizeSub: Subscription = null;
@@ -28,36 +27,25 @@ export class GameService {
   private camera: PerspectiveCamera;
   private scene: Scene;
   private renderer: WebGLRenderer;
-  private stereoEffect: StereoEffect;
+  //private stereoEffect: StereoEffect;
 
   private threeCanvas: HTMLElement;
 
-  private racer: Racer;
+  private race: Race;
 
   private backgroundRefreshInterval: number = -1;
   private physicsInterval: number = -1;
   private currentTime: number = 0;
   private lastTime: number = 0;
-  private totalTime: number = 0;
   private beginTime: number = 0;
   private fps: number = 0;
   private fpsTable: number[] = [];
 
   private shake: number = 0;
 
+  //private stereoEnabled: boolean = false;
 
-  private stereoEnabled: boolean = false;
-
-  private finished: boolean;
-  private controllerClosed: boolean;
   private animation: number;
-
-  private finalPoints: number;
-  public timeLimit: number = TIME_LIMIT;
-  private bonusTime: number;
-  private objective: number = OBJECTIVE;
-  private lose: boolean;
-  private win: boolean;
 
   public playerName: string = "";
 
@@ -70,25 +58,18 @@ export class GameService {
     this.playerName = playerName;
   }
 
-  initScene(container: HTMLElement, racer: Racer): Observable<Racer> {
-    return new Observable<Racer>( (observer: Observer<Racer>) => {
+  initScene(container: HTMLElement, race: Race): Observable<Race> {
+    return new Observable<Race>( (observer: Observer<Race>) => {
 
       this.container = container;
-      this.racer = racer;
+      this.race = race;
 
       this.beginTime = new Date().getTime();
 
       this.camera = new PerspectiveCamera(100, this.container.clientWidth / this.container.clientHeight, 1, CAMERA_MAX);
-      this.camera.position.set(0, 0, racer.z);
+      this.camera.position.set(0, 0, race.player.z);
       this.camera.up = new Vector3(0,0,1);
       this.camera.lookAt(new Vector3(0, CAMERA_FOCUS, 0));
-
-      if(this.resizeSub) {
-        this.resizeSub.unsubscribe();
-      }
-      this.resizeSub = fromEvent(window, 'resize').subscribe( () => {
-        this.onWindowResize();
-      });
 
       const directionalLight = new DirectionalLight( 0xffffff, 0.9 );
       directionalLight.position.y = -750;
@@ -98,14 +79,21 @@ export class GameService {
       this.scene = new Scene();
       this.scene.add( directionalLight );
 
+      if(this.resizeSub) {
+        this.resizeSub.unsubscribe();
+      }
+      this.resizeSub = fromEvent(window, 'resize').subscribe( () => {
+        this.onWindowResize();
+      });
+
       this.loadResources().subscribe( () => {
         this.renderer = new WebGLRenderer({ alpha: true });
 
         this.renderer.setSize( container.clientWidth, container.clientHeight );
 
-        this.stereoEffect = new StereoEffect( this.renderer );
-        this.stereoEffect.setEyeSeparation(1);
-        this.stereoEffect.setSize( container.clientWidth, container.clientHeight );
+        //this.stereoEffect = new StereoEffect( this.renderer );
+        //this.stereoEffect.setEyeSeparation(1);
+        //this.stereoEffect.setSize( container.clientWidth, container.clientHeight );
 
         this.threeCanvas = this.renderer.domElement;
 
@@ -116,7 +104,7 @@ export class GameService {
 
         this.startAnimate();
 
-        observer.next(this.racer);
+        observer.next(this.race);
         observer.complete();
       });
     });
@@ -126,7 +114,6 @@ export class GameService {
     this.camera.aspect = this.container.clientWidth / this.container.clientHeight;
     this.camera.updateProjectionMatrix();
     this.renderer.setSize( this.container.clientWidth, this.container.clientHeight );
-
   }
 
   private loadResources(): Observable<any> {
@@ -157,7 +144,7 @@ export class GameService {
       });
     })));
 
-    loadingObs.push(this.racerService.loadDesignElement(this.racer).pipe( map(design => {
+    loadingObs.push(this.racerService.loadDesignElement(this.race.player).pipe( map(design => {
       this.scene.add(design.obj);
     })));
 
@@ -180,13 +167,52 @@ export class GameService {
   }
 
   private animate() {
-    this.shake = ((this.shake+1) % 10);
 
+    this.shake = ((this.shake+1) % 10); // shake is used for drifting animation
+
+    this.computeFPS();
+    this.animatePlayer();
+    this.animateItems();
+
+    //if(this.stereoEnabled){
+    //  this.stereoEffect.render( this.scene, this.camera );
+    //} else {
+    this.renderer.render( this.scene, this.camera );
+    //}
+
+    if(!this.isGameFinished()) {
+      this.animation = requestAnimationFrame( () => { this.animate() } );
+    } else {
+      this.sendResult();
+    }
+  }
+
+  private isGameFinished(){
+    return this.race.player.turn >= this.race.rules.turns;
+  }
+
+  private sendResult() {
+    const finalPoints = this.race.player.points + this.race.rules.time - this.race.time;
+    const bonusTime = (this.race.rules.time - this.race.time) * this.race.rules.timeValue;
+
+    this.race.result = {
+      itemNb: this.race.player.totalItems.length,
+      itemPts: this.race.player.points,
+      timePts: bonusTime,
+      totalPts:finalPoints,
+      raceTime: this.race.time,
+      objectiveTime: this.race.rules.time,
+      objectivePts: this.race.rules.pts
+    };
+
+    this.resultSubject.next(this.race.result);
+  }
+
+  private computeFPS() {
     this.currentTime = new Date().getTime();
     const total = this.currentTime - this.lastTime;
     this.lastTime = this.currentTime;
-    this.totalTime = Math.round((this.currentTime - this.beginTime) / 1000);
-    this.racer.totalTime = this.totalTime;
+    this.race.time = Math.round((this.currentTime - this.beginTime) / 1000);
 
     this.fps = Math.round(1000/total);
     if(this.fpsTable.length >= 100) {
@@ -198,19 +224,24 @@ export class GameService {
       return lastVal + newVal;
     }, 0);
 
-    this.racer.fps = Math.floor(sumFPS / this.fpsTable.length);
+    this.race.fps = Math.floor(sumFPS / this.fpsTable.length);
+  }
 
-    const driverObj = this.racer.design.obj;
-    const driverPlane = this.racer.design.plane;
+  private animatePlayer() {
+
+    const player = this.race.player;
+
+    const driverObj = player.design.obj;
+    const driverPlane = player.design.plane;
 
     if(driverObj){
-      const angle = (this.racer.rotation-90) * Math.PI / 180;
+      const angle = degToRad(player.rotation-90);
 
-      driverObj.position.x = this.racer.x + (-2*Math.cos(angle));
-      driverObj.position.y = -this.racer.y + (-2*Math.sin(angle));
+      driverObj.position.x = player.x + (-2*Math.cos(angle));
+      driverObj.position.y = -player.y + (-2*Math.sin(angle));
 
 
-      driverPlane.rotation.y = (this.racer.rotation-180) * Math.PI / 180;
+      driverPlane.rotation.y = degToRad(player.rotation-180);
 
       this.camera.position.x = driverObj.position.x + (CAMERA_BACK * Math.cos(angle));
       this.camera.position.y = driverObj.position.y + (CAMERA_BACK * Math.sin(angle));
@@ -219,31 +250,31 @@ export class GameService {
       const lookAt = {
         x: driverObj.position.x + (CAMERA_FOCUS * Math.cos(angle)),
         y: driverObj.position.y + (CAMERA_FOCUS * Math.sin(angle)),
-        z: this.racer.z - 8
+        z: player.z - CAMERA_HEIGHT
       };
 
-      const driftingValue = +(this.racer.status === RacerStatus.drifting);
+      const driftingValue = +(player.status === RacerStatus.drifting);
       driverObj.position.x += driftingValue * (+(this.shake>5)) * 0.1;
 
       this.camera.lookAt(new Vector3(lookAt.x, lookAt.y, lookAt.z));
 
     }
+  }
 
-    this.racer.circuit.items.forEach((item) =>{
+  private animateItems() {
+    this.race.circuit.items.forEach((item) =>{
       if(item.obj){
 
         if(item.available) {
           item.obj.rotation.x += 0.05;
           item.obj.rotation.y += 0.05;
 
-
           this.itemService.nextFrame(item)
           item.obj.position.x = item.tempPos.x;
           item.obj.position.y = item.tempPos.y;
 
-          const dist = Math.sqrt(Math.pow(item.obj.position.x - this.camera.position.x, 2) + Math.pow(item.obj.position.y - this.camera.position.y, 2));
-
-          const visible = dist < 300;
+          const dist = GameService.getDist2D(item.obj.position, this.camera.position);
+          const visible = dist < CLIPPING_DIST;
 
           item.obj.visible = item.available && visible;
         } else {
@@ -251,92 +282,59 @@ export class GameService {
         }
       }
     });
-
-    if(this.stereoEnabled){
-      this.stereoEffect.render( this.scene, this.camera );
-    } else {
-      this.renderer.render( this.scene, this.camera );
-    }
-
-
-    this.finished = this.isGameFinished();
-
-    if(!this.finished && !this.controllerClosed) {
-      this.animation = requestAnimationFrame( () => { this.animate() } );
-    } else {
-
-      this.finalPoints = this.racer.points + this.timeLimit - this.totalTime;
-      this.bonusTime = this.timeLimit - this.totalTime;
-
-      this.racer.racerResult = {
-        itemNb: this.racer.totalItems.length,
-        itemPts: this.racer.points,
-        timePts: this.bonusTime,
-        totalPts: this.finalPoints,
-        raceTime: this.totalTime,
-        objectiveTime: this.timeLimit,
-        objectivePts: this.objective
-      };
-
-      this.resultSubject.next(this.racer.racerResult);
-
-      if(this.finalPoints < this.objective){
-        this.lose = true;
-      } else {
-        this.win = true;
-      }
-
-      // Set score in a cookie to send by mail
-      const expireDate = new Date();
-      expireDate.setDate(expireDate.getDate() + 3);
-      CookieService.setCookie('score', this.finalPoints.toString(), expireDate, '/');
-
-    }
   }
 
   private updatePhysics(){
+    const player = this.race.player;
+    this.updateActions(player);
+    this.updateSprites(player);
+  }
+
+  private updateActions(player: Racer) {
 
     const actions = this.controlsService.getAction();
 
-
     if(actions[MoveAction.go_backward]) {
-      this.racerService.move(this.racer, MoveAction.go_backward);
+      this.racerService.move(player, MoveAction.go_backward);
     }
     if(actions[MoveAction.go_forward]) {
-      this.racerService.move(this.racer, MoveAction.go_forward);
+      this.racerService.move(player, MoveAction.go_forward);
     }
     if(actions[MoveAction.no_move]) {
-      this.racerService.move(this.racer, MoveAction.no_move);
-      this.racerService.cancelDrift(this.racer);
+      this.racerService.move(player, MoveAction.no_move);
+      this.racerService.cancelDrift(player);
     }
 
     if(actions[MoveAction.turn_left]){
-      this.racerService.rotate(this.racer, RotateDirection.left);
+      this.racerService.rotate(player, RotateDirection.left);
     }
     if(actions[MoveAction.turn_right]){
-      this.racerService.rotate(this.racer, RotateDirection.right);
+      this.racerService.rotate(player, RotateDirection.right);
     }
     if(actions[MoveAction.no_turn]){
-      this.racerService.rotate(this.racer, RotateDirection.front);
+      this.racerService.rotate(player, RotateDirection.front);
+    }
+
+    if(actions[MoveAction.jump]){
+      this.racerService.jump(player);
+    } else {
+      this.racerService.driftTurbo(player);
     }
 
     this.defineDriverMaterial(actions);
+  }
 
-    if(actions[MoveAction.jump]){
-      this.racerService.jump(this.racer);
-    } else {
-      this.racerService.driftTurbo(this.racer);
-    }
+  private updateSprites(player: Racer) {
+    const spriteRotation = degToRad(player.rotation - 180);
+    const circuitSpritesKeys = Object.keys(this.race.circuit.sprites);
 
-    const spriteRotation = (this.racer.rotation-180) * Math.PI / 180;
-    const circuitSpritesKeys = Object.keys(this.racer.circuit.sprites);
-
+    // Update sprites rotation and clipping with camera view angle
     circuitSpritesKeys.forEach( spriteKey => {
-      const sprite = this.racer.circuit.sprites[spriteKey];
+      const sprite = this.race.circuit.sprites[spriteKey];
       sprite.positions.forEach(position => {
-        const dist = Math.sqrt(Math.pow(position.x - this.camera.position.x, 2) + Math.pow(-position.y - this.camera.position.y, 2));
+        const dist = GameService.getDist2D( new Vector2(position.x, -position.y), this.camera.position);
         if(sprite.obj) {
-          position.obj.visible = dist < 300;
+          position.obj.visible = dist < CLIPPING_DIST;
           if(sprite.autorotate) {
             position.obj.rotation.y = spriteRotation;
           }
@@ -345,32 +343,31 @@ export class GameService {
     });
   }
 
-  private isGameFinished(){
-    return this.racer.turn >= 1;
-  }
+  // TODO Stereo feature for cardboard
+  //public activateStereo() {
+    //this.stereoEnabled = !this.stereoEnabled;
 
-  public activateStereo() {
-    this.stereoEnabled = !this.stereoEnabled;
 
-    if(!this.stereoEnabled){
-      this.controlsService.setMode(window['cordova'] ? ControlsType.touchscreen : ControlsType.keyboard);
-      this.renderer.setSize( window.innerWidth, window.innerHeight );
-    } else {
-      this.controlsService.setMode(ControlsType.cardboard);
-    }
+    //if(!this.stereoEnabled){
+    //this.controlsService.setMode(window['cordova'] ? ControlsType.touchscreen : ControlsType.keyboard);
+    //this.renderer.setSize( window.innerWidth, window.innerHeight );
+    //} else {
+    //  this.controlsService.setMode(ControlsType.cardboard);
+    //}
 
-  }
+  //}
 
-  public defineDriverMaterial(actions){
+  private defineDriverMaterial(actions){
+    const player = this.race.player;
 
     let racerPic: Vector2 = RACER_PICS.GO_FORWARD;
 
-    if(this.racer.status === RacerStatus.drifting){
+    if(player.status === RacerStatus.drifting){
 
       const frameValue: number = this.shake > 6 ? 2 : (this.shake < 3 ? 0 : 1);
 
-      const fire = this.racerService.getDriftingFire(this.racer, this.currentTime);
-      switch (this.racer.driftDirection) {
+      const fire = this.racerService.getDriftingFire(player, this.currentTime);
+      switch (player.driftDirection) {
         case RotateDirection.left: {
           switch (fire) {
             case DriftFire.none: {
@@ -434,16 +431,13 @@ export class GameService {
 
     } else {
       if(actions[MoveAction.turn_left]){
-        racerPic = this.racer.speed ? RACER_PICS.TURN_LEFT : RACER_PICS.SEE_LEFT;
+        racerPic = player.speed ? RACER_PICS.TURN_LEFT : RACER_PICS.SEE_LEFT;
       } else if(actions[MoveAction.turn_right]){
-        racerPic = this.racer.speed ? RACER_PICS.TURN_RIGHT : RACER_PICS.SEE_RIGHT;
+        racerPic = player.speed ? RACER_PICS.TURN_RIGHT : RACER_PICS.SEE_RIGHT;
       }
     }
 
-
-
-
-    this.racerService.updateRacerPic(this.racer, racerPic);
+    this.racerService.updateRacerPic(player, racerPic);
   }
 
   public clearRace(){
@@ -451,8 +445,6 @@ export class GameService {
       cancelAnimationFrame(this.animation);
       this.animation = null;
     }
-
-    this.finished = true;
 
     if(this.physicsInterval >= 0) {
       clearInterval(this.physicsInterval);
@@ -471,34 +463,26 @@ export class GameService {
     this.camera = null;
     this.scene = null;
     this.renderer = null;
-    this.stereoEffect = null;
-    this.racer = null;
-
+    //this.stereoEffect = null;
+    this.race = null;
 
     this.backgroundRefreshInterval = -1;
     this.physicsInterval = -1;
     this.currentTime = 0;
     this.lastTime = 0;
-    this.totalTime = 0;
     this.beginTime = 0;
     this.fps = 0;
     this.fpsTable = [];
 
     this.shake = 0;
 
+    //this.stereoEnabled = false;
 
-    this.stereoEnabled = false;
-
-    this.finished = false;
     this.animation = 0;
-
-    this.finalPoints = 0;
-    this.timeLimit = TIME_LIMIT;
-    this.bonusTime = 0
-    this.objective = OBJECTIVE;
-    this.lose = false;
-    this.win = false;
 
   }
 
+  private static getDist2D(a: Vector2 | Vector3, b: Vector2 | Vector3): number {
+    return Math.sqrt(Math.pow(a.x - b.x, 2) + Math.pow(a.y - b.y, 2));
+  }
 }

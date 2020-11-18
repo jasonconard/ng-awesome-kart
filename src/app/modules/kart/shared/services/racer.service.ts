@@ -51,14 +51,7 @@ export class RacerService {
   public moveComputing(racer: Racer) {
     const ground = racer.groundBeforeJump || racer.ground;
 
-    //var cc = {
-    //       '50cc': 180,
-    //       '100cc': 150,
-    //       '150cc': 130,
-    //       '200cc': 80
-    //     };
-
-    racer.speed = this.driverService.getCarCurrentSpeed(racer) / 180;
+    racer.speed = this.driverService.getCarCurrentSpeed(racer) / racer.difficulty;
 
     racer.angle = MathUtils.degToRad(racer.rotation);
 
@@ -85,12 +78,12 @@ export class RacerService {
     const passTrough = this.isThroughCheckpoint(
       new Vector2(racer.x, racer.y),
       new Vector2(nextX, nextY),
-      racer.checkpoint.a,
-      racer.checkpoint.b
+      new Vector2(racer.checkpoint.a.x, racer.checkpoint.a.y),
+      new Vector2(racer.checkpoint.b.x, racer.checkpoint.b.y)
     );
 
     if(passTrough){
-      const cps = racer.circuit.checkpoints;
+      const cps = this.circuitService.currentCircuit.checkpoints;
       racer.nbCheckpoint = racer.nbCheckpoint + 1;
 
       const cpId = racer.nbCheckpoint % cps.length;
@@ -104,7 +97,8 @@ export class RacerService {
   }
 
   public manageItems(racer: Racer) {
-    racer.circuit.items.forEach(item => {
+    const circuit = this.circuitService.currentCircuit;
+    circuit.items.forEach(item => {
       if(Math.abs(item.tempPos.x - racer.x) < 6 && Math.abs(-item.tempPos.y - racer.y) < 6) {
         this.getItem(racer, item);
       }

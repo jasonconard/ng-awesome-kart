@@ -1,5 +1,3 @@
-import { Mesh } from 'three';
-
 export interface Building {
   x: number;
   y: number;

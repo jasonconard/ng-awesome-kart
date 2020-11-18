@@ -1,9 +1,7 @@
 import { Injectable } from '@angular/core';
 import { ControlsType } from '../enums/controls';
 import { Racer, RacerStatus, RotateDirection } from '../models/racer';
-import { CAMERA_HEIGHT, OBJECTIVE } from '../../kart.constants';
-import { Driver } from '../models/driver';
-import { Circuit } from '../models/circuit';
+import { CAMERA_HEIGHT } from '../../kart.constants';
 import { DriverService } from './driver.service';
 import { CircuitService } from './circuit.service';
 import { ControlsService } from './controls.service';
@@ -11,6 +9,9 @@ import { MathUtils } from 'three';
 import { GameService } from './game.service';
 import { Subject } from 'rxjs';
 import degToRad = MathUtils.degToRad;
+import { Race } from '../models/race';
+import radToDeg = MathUtils.radToDeg;
+import { Rules } from '../models/rules';
 
 @Injectable({
   providedIn: 'root'
@@ -20,12 +21,11 @@ export class RaceService {
   private loadingSubject = new Subject<boolean>();
   public loadingState = this.loadingSubject.asObservable();
 
-  private racerSubject = new Subject<Racer>();
-  public racerState = this.racerSubject.asObservable();
+  private raceSubject = new Subject<Race>();
+  public raceState = this.raceSubject.asObservable();
 
-  private driver: Driver;
-  private circuit: Circuit;
-  private racer: Racer;
+  private race: Race;
+  public rules: Rules;
 
   private parallaxInterval: number = -1;
 
@@ -37,17 +37,14 @@ export class RaceService {
               private circuitService: CircuitService,
               private controlsService: ControlsService) { }
 
-  initRace(screenElem: HTMLElement, parallaxElem: HTMLElement) {
+  initRace(screenElem: HTMLElement, parallaxElem: HTMLElement, rules: Rules) {
+    this.rules = rules;
 
     this.screenElem = screenElem;
     this.parallaxElem = parallaxElem;
 
-    this.driver = this.driverService.currentDriver;
-    this.circuit = this.circuitService.currentCircuit;
-
     this.clearRace();
 
-    this.racer = null;
     this.loadingSubject.next(true);
 
     this.controlsService.setMode(window['cordova'] ? ControlsType.touchscreen : ControlsType.keyboard);
@@ -55,12 +52,12 @@ export class RaceService {
     //this.stereoEnabled = false;
     //this.accelerometer = null;
 
-    this.racer = new Racer({
-      driver: this.driver,
-      circuit: this.circuit,
-      rotation: this.circuit.direction,
-      x: this.circuit.startPosition.x,
-      y: this.circuit.startPosition.y,
+    const circuit = this.circuitService.currentCircuit;
+    const player = new Racer({
+      driver: this.driverService.currentDriver,
+      rotation: circuit.direction,
+      x: circuit.startPosition.x,
+      y: circuit.startPosition.y,
       z: CAMERA_HEIGHT,
 
       angle: degToRad(0),
@@ -86,21 +83,30 @@ export class RaceService {
       points: 0,
 
       nbCheckpoint: 0,
-      turn: 0,
-      checkpoint: this.circuit.checkpoints[0],
+      checkpoint: circuit.checkpoints[0],
 
+      turn: 0,
       totalTime: 0,
 
       receivedItems: [],
-      totalItems: []
+      totalItems: [],
+
+      difficulty: rules.difficulty
     });
 
-    this.racer.totalTime = 0;
+    this.race = {
+      player,
+      circuit,
+      rules: this.rules,
+      result: null,
+      fps: 0,
+      time: 0
+    }
 
-    this.racerSubject.next(this.racer);
+    this.raceSubject.next(this.race);
 
     setTimeout( () => {
-      const sub = this.gameService.initScene(screenElem, this.racer).subscribe( () => {
+      const sub = this.gameService.initScene(screenElem, this.race).subscribe( () => {
         this.loadingSubject.next(false);
         this.initParallax(parallaxElem);
         sub.unsubscribe();
@@ -109,22 +115,25 @@ export class RaceService {
   }
 
   private updateBackgroundRotation() {
-    const moduloAngle = (this.racer.angle*180/Math.PI) % 360;
-    const reducedWidth = this.racer.circuit.parallaxSizes.width / 360;
+    const player = this.race.player;
+    const moduloAngle = radToDeg(player.angle) % 360;
+    const reducedWidth = this.race.circuit.parallaxSizes.width / 360;
 
-    this.racer.circuit.parallaxes.forEach((para) => {
+    this.race.circuit.parallaxes.forEach((para) => {
       para.elem.style.transform = 'translate3d('+((para.speed * moduloAngle) * reducedWidth) + 'px, 0, 0)';
     });
 
   }
 
+  // TODO Make parallax inside 3D Scene (maybe more optimized)
+  // TODO Multiple layered parallax
   private initParallax(parallaxElem: HTMLElement) {
 
     const $parallax = parallaxElem;
     if(!$parallax) { return; }
     $parallax.innerHTML = "";
-    const parallaxSizes = this.racer.circuit.parallaxSizes;
-    const parallaxes = this.racer.circuit.parallaxes;
+    const parallaxSizes = this.race.circuit.parallaxSizes;
+    const parallaxes = this.race.circuit.parallaxes;
 
     parallaxes.forEach((paralax) => {
       const $para = document.createElement('div');
@@ -162,7 +171,7 @@ export class RaceService {
   }
 
   retry() {
-    this.initRace(this.screenElem, this.parallaxElem);
+    this.initRace(this.screenElem, this.parallaxElem, this.rules);
   }
 
 

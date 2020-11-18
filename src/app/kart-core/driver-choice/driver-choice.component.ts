@@ -153,6 +153,11 @@ export class DriverChoiceComponent implements OnInit, OnDestroy {
           this.selectDriver(driver);
         }
       }
+    } else {
+      if(keyCode === 'Enter') {
+        this.nameInput.nativeElement.blur();
+        this.confirm();
+      }
     }
   }
 

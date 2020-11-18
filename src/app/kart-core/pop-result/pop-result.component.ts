@@ -1,5 +1,7 @@
 import { Component, EventEmitter, Input, OnDestroy, OnInit, Output } from '@angular/core';
-import { RacerResult, RacerResultBtn, ResultAction } from '../../modules/kart/shared/models/racerResult';
+import { RaceResult } from '../../modules/kart/shared/models/raceResult';
+import { CookieService } from '../../shared/services/cookie.service';
+import { RaceResultBtn, ResultAction } from '../../shared/models/raceResultBtn';
 
 @Component({
   selector: 'app-pop-result',
@@ -8,7 +10,7 @@ import { RacerResult, RacerResultBtn, ResultAction } from '../../modules/kart/sh
 })
 export class PopResultComponent implements OnInit, OnDestroy {
 
-  private buttons: RacerResultBtn[] = [{
+  private buttons: RaceResultBtn[] = [{
     action: ResultAction.back_to_website,
     label: 'Je préfère prendre le bus',
     win: false
@@ -31,9 +33,9 @@ export class PopResultComponent implements OnInit, OnDestroy {
     win: true
   }];
 
-  public filteredButtons: RacerResultBtn[] = [];
+  public filteredButtons: RaceResultBtn[] = [];
 
-  @Input() result: RacerResult;
+  @Input() result: RaceResult;
 
   @Output() onAction = new EventEmitter<ResultAction>();
 
@@ -44,6 +46,12 @@ export class PopResultComponent implements OnInit, OnDestroy {
   ngOnInit(): void {
     this.win = this.result.totalPts >= this.result.objectivePts;
     this.filteredButtons = this.buttons.filter( btn => btn.win === this.win );
+
+
+    // Set score in a cookie to send by mail
+    const expireDate = new Date();
+    expireDate.setDate(expireDate.getDate() + 3);
+    CookieService.setCookie('score', this.result.totalPts.toString(), expireDate, '/');
   }
 
   ngOnDestroy(): void {

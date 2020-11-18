@@ -7,8 +7,7 @@
       <input #nameInput type="text"
              (focus)="toggleFieldFocus(true)"
              (blur)="toggleFieldFocus(false)"
-             [(ngModel)]="playerName"
-             (keyup.enter)="confirm()">
+             [(ngModel)]="playerName">
     </div>
     <div class="name-title-error" *ngIf="error" @errorAnim>
       Veuillez entrer un nom (sans caractères spéciaux)

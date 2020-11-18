@@ -2,7 +2,7 @@ import { Driver } from './driver';
 import { Circuit } from './circuit';
 import { RacerItem } from './racerItem';
 import { Mesh, MeshBasicMaterial, Object3D, PlaneGeometry, Vector2 } from 'three';
-import { RacerResult } from './racerResult';
+import { Checkpoint } from './checkpoint';
 
 export const ROTATION_BASE_RATIO = 0.5;
 export const ROTATION_SPEED_RATIO = 12;
@@ -71,7 +71,6 @@ export interface Design {
 
 export class Racer {
   driver: Driver;
-  circuit: Circuit;
   x: number;
   y: number;
   z: number;
@@ -106,16 +105,15 @@ export class Racer {
 
   totalTime: number;
 
-  checkpoint: any; // TODO : Type checkpoint ? (see Circuit.Checkpoint)
+  difficulty: number;
+
+  checkpoint: Checkpoint;
 
   receivedItems: RacerItem[];
   totalItems: RacerItem[];
 
-  racerResult: RacerResult;
-
   constructor(o: Partial<Racer>) {
     this.driver = o.driver;
-    this.circuit = o.circuit;
 
     this.x = o.x || 0;
     this.y = o.y || 0;
@@ -146,18 +144,16 @@ export class Racer {
 
     this.points = o.points;
 
-    this.nbCheckpoint = o.nbCheckpoint;
-
     this.turn = o.turn;
-
     this.totalTime = o.totalTime;
 
+    this.difficulty = o.difficulty;
+
+    this.nbCheckpoint = o.nbCheckpoint;
     this.checkpoint = o.checkpoint;
 
     this.receivedItems = o.receivedItems;
     this.totalItems = o.totalItems;
-
-    this.racerResult = o.racerResult;
   }
 
 }

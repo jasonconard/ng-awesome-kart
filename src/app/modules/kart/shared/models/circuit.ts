@@ -1,7 +1,6 @@
 import { Checkpoint } from './checkpoint';
 import { Point } from './point';
 import { Item } from './item';
-import { Assets } from './assets';
 import { Building } from './building';
 import { Sprite } from 'three';
 

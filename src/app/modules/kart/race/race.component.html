@@ -25,23 +25,23 @@
 <!--    <br/>points: {{kt.racer.points}}-->
 <!--  </div>-->
 
-  <div class="score-panel" *ngIf="racer">
+  <div class="score-panel" *ngIf="race && race.player">
     <div class="score">
-      score: {{racer.points}} pt{{racer.points > 1?'s':''}}
+      score: {{race.player.points}} pt{{race.player.points > 1?'s':''}}
     </div>
     <div class="time">
-      {{racer.totalTime | time}}
+      {{race.time | time}}
     </div>
   </div>
-  <div class="received-items" *ngIf="racer">
-    <div class="received-item" *ngFor="let item of racer.receivedItems" @itemAppear>
+  <div class="received-items" *ngIf="race && race.player">
+    <div class="received-item" *ngFor="let item of race.player.receivedItems" @itemAppear>
       <img [src]="item.img"/> {{item.libelle}} <span [ngClass]="item.effectClass">{{item.effect}}</span>
     </div>
   </div>
-  <div class="objective-panel" *ngIf="racer">
+  <div class="objective-panel" *ngIf="race && race.rules">
     <div class="score">
-      objectif: {{objective}} pt{{objective > 1?'s':''}}<br/>
-      temps: {{timeLimit | time}}
+      objectif: {{race.rules.pts}} pt{{race.rules.pts > 1?'s':''}}<br/>
+      temps: {{race.rules.time | time}}
     </div>
   </div>
 
