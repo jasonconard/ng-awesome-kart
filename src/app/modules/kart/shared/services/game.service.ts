@@ -122,6 +122,7 @@ export class GameService {
 
     loadingObs.push(this.circuitService.loadCircuit().pipe( map( circuit => {
       this.scene.add(circuit.three.mesh);
+      this.scene.add(circuit.background3d.mesh);
     })));
 
     loadingObs.push(this.circuitService.loadItems().pipe( map( objs => {

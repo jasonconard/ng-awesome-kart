@@ -3,6 +3,7 @@ import { Point } from './point';
 import { Item } from './item';
 import { Building } from './building';
 import { Sprite } from 'three';
+import { MeshWrapper } from './meshWrapper';
 
 export interface Circuit {
   id: string;
@@ -12,15 +13,18 @@ export interface Circuit {
   map: string;
   normales: string;
   background: string;
-  parallaxes: { img: string, speed: number, elem: HTMLElement }[];
-  parallaxSizes: { x: number, y: number, scale: number, width: number, height: number };
+  backgroundBottom: string;
+  backgroundTop: string;
+  background3d: MeshWrapper;
+  //parallaxes: { img: string, speed: number, elem: HTMLElement }[];
+  //parallaxSizes: { x: number, y: number, scale: number, width: number, height: number };
   bgColor: string;
   backgroundBlobUrl: string;
   backgroundImage: HTMLImageElement;
   startPosition: Point;
   direction: number;
   mapGrounds: number[][];
-  three: any;
+  three: MeshWrapper;
   checkpoints: Checkpoint[];
   items: Item[];
   sprites: Sprite[];

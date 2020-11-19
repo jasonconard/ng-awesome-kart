@@ -1,11 +1,11 @@
 import { Injectable } from '@angular/core';
 import { Circuit } from '../models/circuit';
 import {
-  BoxGeometry,
+  BoxGeometry, Color, CylinderGeometry,
   DoubleSide,
-  EdgesGeometry,
+  EdgesGeometry, LinearFilter,
   LineBasicMaterial,
-  LineSegments,
+  LineSegments, MathUtils,
   Mesh, MeshBasicMaterial,
   MeshPhongMaterial, NearestFilter, Object3D,
   PlaneGeometry, TextureLoader,
@@ -19,6 +19,7 @@ import { RequestService } from './request.service';
 import { RequestConfig } from '../models/requestConfig';
 import { map } from 'rxjs/operators';
 import { CircuitSprite } from '../models/circuitSprite';
+import degToRad = MathUtils.degToRad;
 
 @Injectable({
   providedIn: 'root'
@@ -287,13 +288,11 @@ export class CircuitService {
         loader.load(
           this.currentCircuit.map, tex => {
 
-
             tex.magFilter = NearestFilter;
             tex.minFilter = NearestFilter;
             const material = new MeshBasicMaterial({
               map: tex
             });
-
 
             const trackMapping = [
               new Vector2(0,1),
@@ -306,22 +305,50 @@ export class CircuitService {
             geometry.faceVertexUvs[0][0] = [ trackMapping[0], trackMapping[1], trackMapping[3] ];
             geometry.faceVertexUvs[0][1] = [ trackMapping[1], trackMapping[2], trackMapping[3] ];
 
-            const plane = new Mesh( geometry, material );
-            plane.position.x = this.currentCircuit.width/2;
-            plane.position.y = -this.currentCircuit.height/2;
+            const mesh = new Mesh( geometry, material );
+            mesh.position.x = this.currentCircuit.width/2;
+            mesh.position.y = -this.currentCircuit.height/2;
 
-            this.currentCircuit.three.tex = tex;
-            this.currentCircuit.three.material = material;
-            this.currentCircuit.three.geometry = geometry;
-            this.currentCircuit.three.mesh = plane;
+            this.currentCircuit.three = { tex, material, geometry, mesh };
 
             this.requestService.getBlob(this.currentCircuit.background).subscribe( blob => {
               this.currentCircuit.backgroundBlobUrl = window.URL.createObjectURL(blob);
               const image = new Image();
               image.addEventListener('load', () => {
                 this.currentCircuit.backgroundImage = image;
-                observer.next(this.currentCircuit);
-                observer.complete();
+
+                loader.load(this.currentCircuit.background, paraTex => {
+
+                  paraTex.magFilter = NearestFilter;
+                  paraTex.minFilter = NearestFilter;
+                  const paraMat = new MeshBasicMaterial({
+                    map: paraTex,
+                    side: DoubleSide
+                  });
+                  const materials = [
+                    paraMat,
+                    new MeshBasicMaterial( { color: new Color(this.currentCircuit.backgroundTop), side: DoubleSide}), // top
+                    new MeshBasicMaterial( { color: new Color(this.currentCircuit.backgroundBottom), side: DoubleSide}) // bottom
+                  ]
+                  const max = Math.max(this.currentCircuit.width, this.currentCircuit.height) * 1.5;
+
+                  const paraGeo = new CylinderGeometry(max, max, max * 2, 100);
+                  const paraMesh = new Mesh(paraGeo, materials);
+                  paraMesh.rotation.x = (degToRad(90));
+                  paraMesh.position.x = this.currentCircuit.height / 2;
+                  paraMesh.position.y = -this.currentCircuit.width / 2;
+                  paraMesh.position.z = max / -6;
+
+                  this.currentCircuit.background3d = {
+                    tex: paraTex,
+                    material: paraMat,
+                    geometry: paraGeo,
+                    mesh: paraMesh
+                  }
+
+                  observer.next(this.currentCircuit);
+                  observer.complete();
+                });
               });
               image.src = this.currentCircuit.backgroundBlobUrl;
             });

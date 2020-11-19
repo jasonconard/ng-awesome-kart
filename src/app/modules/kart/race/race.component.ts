@@ -31,7 +31,6 @@ export class RaceComponent implements OnInit, OnDestroy {
   public subs: Subscription[] = [];
 
   @ViewChild('screen', { static: true }) screenRef: ElementRef;
-  @ViewChild('parallax', { static: true }) parallaxRef: ElementRef;
 
   @Output() onExit = new EventEmitter<any>();
 
@@ -97,7 +96,7 @@ export class RaceComponent implements OnInit, OnDestroy {
 
     this.circuitBack = { background: circuit.bgColor };
 
-    this.raceService.initRace(this.screenRef.nativeElement, this.parallaxRef.nativeElement, this.rules);
+    this.raceService.initRace(this.screenRef.nativeElement, this.rules);
   }
 
 }
