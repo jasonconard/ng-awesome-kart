@@ -4,19 +4,8 @@
   "map": "assets/img/maps/ebiz-new.png",
   "normales": "assets/img/maps/ebiz-new-normales.png",
   "background": "assets/img/maps/ebiz-new-parallax.png",
-  "parallaxes": [
-    {
-      "img": "assets/img/maps/ebiz-new-parallax.png",
-      "speed": 1
-    }
-  ],
-  "parallaxSizes": {
-    "x": 480,
-    "y": 270,
-    "scale": 3,
-    "width": 1440,
-    "height": 810
-  },
+  "backgroundTop": "#58112e",
+  "backgroundBottom": "#18080d",
   "bgColor": "#0f0f32",
   "startPosition": {
     "x": 160,
