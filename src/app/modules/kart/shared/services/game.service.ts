@@ -193,14 +193,14 @@ export class GameService {
   }
 
   private sendResult() {
-    const finalPoints = this.race.player.points + this.race.rules.time - this.race.time;
     const bonusTime = (this.race.rules.time - this.race.time) * this.race.rules.timeValue;
+    const finalPoints = this.race.player.points + bonusTime;
 
     this.race.result = {
       itemNb: this.race.player.totalItems.length,
       itemPts: this.race.player.points,
       timePts: bonusTime,
-      totalPts:finalPoints,
+      totalPts: finalPoints,
       raceTime: this.race.time,
       objectiveTime: this.race.rules.time,
       objectivePts: this.race.rules.pts
