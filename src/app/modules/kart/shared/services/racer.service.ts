@@ -10,7 +10,8 @@ import {
   DRIFT_TRACTION_RATIO,
   DriftFire,
   MoveAction,
-  Racer, RACER_PICS,
+  Racer,
+  RACER_PICS,
   RacerStatus,
   RATIO_TURBO_DRIFT,
   RotateDirection,
@@ -27,6 +28,8 @@ import { DriverService } from './driver.service';
 import { Item, ItemType } from '../models/item';
 import { RacerItem } from '../models/racerItem';
 import { ControlsService } from './controls.service';
+import { AudioService } from './audio.service';
+import { SoundKey } from '../models/sound';
 
 @Injectable({
   providedIn: 'root'
@@ -35,6 +38,7 @@ export class RacerService {
 
   constructor(private circuitService: CircuitService,
               private controlsService: ControlsService,
+              private audioService: AudioService,
               private driverService: DriverService) { }
 
 
@@ -152,6 +156,12 @@ export class RacerService {
           receivedItem.effectClass = 'superbonus';
           receivedItem.effect = 'boost!!';
           break;
+      }
+
+      if(item.type === ItemType.super_bonus) {
+        this.audioService.playSound(SoundKey.superbonus);
+      } else {
+        this.audioService.playSound(SoundKey.bonus);
       }
 
       racer.receivedItems.unshift(receivedItem);

@@ -33,6 +33,12 @@ export class RequestService {
     });
   }
 
+  getArrayBuffer(url: string): Observable<ArrayBuffer> { //get file from service
+    return this.http.get(url, {
+      responseType: 'arraybuffer'
+    });
+  }
+
   private doGet(url: string, params: any, headers?: any): Observable<HttpResponse<any>> {
     return this.http.get(url, { observe: 'response', params, headers })
       .pipe(

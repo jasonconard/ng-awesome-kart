@@ -11,6 +11,8 @@ import { CAMERA_BACK, CAMERA_FOCUS, CAMERA_HEIGHT, CAMERA_MAX, CLIPPING_DIST } f
 import { Race } from '../models/race';
 import { RaceResult } from '../models/raceResult';
 import degToRad = MathUtils.degToRad;
+import { AudioService } from './audio.service';
+import { SoundKey } from '../models/sound';
 
 @Injectable({
   providedIn: 'root'
@@ -52,7 +54,8 @@ export class GameService {
   constructor(private racerService: RacerService,
               private itemService: ItemService,
               private controlsService: ControlsService,
-              private circuitService: CircuitService) { }
+              private circuitService: CircuitService,
+              private audioService: AudioService) {}
 
   setPlayerName(playerName: string) {
     this.playerName = playerName;
@@ -103,6 +106,10 @@ export class GameService {
         this.controlsService.bindTouching(this.threeCanvas);
 
         this.startAnimate();
+
+        this.audioService.stopSound(SoundKey.stageFailed);
+        this.audioService.stopSound(SoundKey.stageSuccess);
+        this.audioService.playSound(SoundKey.stageMusic);
 
         observer.next(this.race);
         observer.complete();
@@ -205,6 +212,17 @@ export class GameService {
       objectiveTime: this.race.rules.time,
       objectivePts: this.race.rules.pts
     };
+
+
+    this.audioService.stopSound(SoundKey.drift);
+    this.audioService.stopSound(SoundKey.engine);
+    this.audioService.stopSound(SoundKey.stageMusic);
+
+    if(this.race.result.objectivePts > finalPoints) {
+      this.audioService.playSound(SoundKey.stageFailed);
+    } else {
+      this.audioService.playSound(SoundKey.stageSuccess);
+    }
 
     this.resultSubject.next(this.race.result);
   }
@@ -323,6 +341,7 @@ export class GameService {
     }
 
     this.defineDriverMaterial(actions);
+    this.defineDriverSound();
   }
 
   private updateSprites(player: Racer) {
@@ -357,6 +376,24 @@ export class GameService {
     //}
 
   //}
+
+  private defineDriverSound() {
+    this.audioService.playSound(SoundKey.engine);
+    const player = this.race.player;
+    if(player.status === RacerStatus.drifting) {
+      this.audioService.playSound(SoundKey.drift);
+    } else {
+      this.audioService.stopSound(SoundKey.drift);
+    }
+
+    const volume = Math.min(Math.max(player.speed / 3, 0.2), 0.4);
+    this.audioService.updatePitch(SoundKey.engine, player.speed * (150 * player.driver.stats.weight));
+    this.audioService.updateVolume(SoundKey.engine, volume);
+    //if(player.status === RacerStatus.normal) {
+    //} else {
+    //}
+
+  }
 
   private defineDriverMaterial(actions){
     const player = this.race.player;
@@ -480,6 +517,11 @@ export class GameService {
     //this.stereoEnabled = false;
 
     this.animation = 0;
+
+
+    this.audioService.stopSound(SoundKey.drift);
+    this.audioService.stopSound(SoundKey.engine);
+    this.audioService.stopSound(SoundKey.stageMusic);
 
   }
 

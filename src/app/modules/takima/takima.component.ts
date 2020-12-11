@@ -24,7 +24,6 @@ export class TakimaComponent implements OnInit{
   }
 
   ngOnInit() {
-    console.log('init takima component');
 
     this.forcedFullscreen = this.coreService.forcedFullscreen;
 
@@ -43,7 +42,6 @@ export class TakimaComponent implements OnInit{
 
   initRoute(): void {
     const firstChild = this.activatedRoute.snapshot.firstChild;
-    console.log(firstChild);
     if (firstChild) {
       this.routeOptions.headerTitle = firstChild.data['title'] || '';
       this.routeOptions.footerBtns = firstChild.data['footerBtns'] || [];
