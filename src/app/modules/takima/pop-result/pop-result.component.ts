@@ -1,7 +1,7 @@
 import { Component, EventEmitter, Input, OnDestroy, OnInit, Output } from '@angular/core';
-import { RaceResult } from '../../modules/kart/shared/models/raceResult';
-import { CookieService } from '../../shared/services/cookie.service';
-import { RaceResultBtn, ResultAction } from '../../shared/models/raceResultBtn';
+import { RaceResult } from '../../kart/shared/models/raceResult';
+import { CookieService } from '../../../shared/services/cookie.service';
+import { RaceResultBtn, ResultAction } from '../shared/models/raceResultBtn';
 
 @Component({
   selector: 'app-pop-result',

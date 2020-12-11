@@ -1,0 +1,15 @@
+<div class="app-container">
+
+
+  <div class="app-content" [class.fullscreen]="routeOptions.fullscreen || forcedFullscreen">
+    <app-page-header *ngIf="routeOptions.headerTitle && !forcedFullscreen"
+                     [title]="routeOptions.headerTitle"></app-page-header>
+
+    <div class="app-route-content">
+      <router-outlet></router-outlet>
+    </div>
+
+    <app-page-footer *ngIf="routeOptions.footerBtns && routeOptions.footerBtns.length && !forcedFullscreen"
+                     [btns]="routeOptions.footerBtns"></app-page-footer>
+  </div>
+</div>

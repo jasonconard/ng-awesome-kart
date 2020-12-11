@@ -1,7 +1,8 @@
 import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute, NavigationEnd, Router } from '@angular/router';
-import { FooterBtn } from './shared/models/footerBtn';
 import { InitService } from './modules/kart/shared/services/init.service';
+import { FooterBtn } from './modules/takima/shared/models/footerBtn';
+import { CoreService } from './shared/services/core.service';
 
 @Component({
   selector: 'app-root',
@@ -15,36 +16,18 @@ export class AppComponent implements OnInit{
 
   public forcedFullscreen: boolean = false;
 
-  public routeOptions: { headerTitle: string, footerBtns: FooterBtn[], fullscreen: boolean } = {
-    headerTitle: '',
-    footerBtns: [],
-    fullscreen: false
-  }
-
-  constructor(private router: Router,
-              private initService: InitService,
-              private activatedRoute: ActivatedRoute) {
+  constructor(private initService: InitService,
+              private coreService: CoreService) {
   }
 
   ngOnInit() {
 
-    this.forcedFullscreen = this.initService.forcedFullscreen;
+    this.forcedFullscreen = this.coreService.forcedFullscreen;
 
     this.initService.initData();
 
-    this.initService.forcedFullscreenState.subscribe(forced => {
+    this.coreService.forcedFullscreenState.subscribe(forced => {
       this.forcedFullscreen = forced;
-    });
-
-    this.router.events.forEach((event) => {
-      if (event instanceof NavigationEnd) {
-        const firstChild = this.activatedRoute.snapshot.firstChild;
-        if (firstChild) {
-          this.routeOptions.headerTitle = firstChild.data['title'] || '';
-          this.routeOptions.footerBtns = firstChild.data['footerBtns'] || [];
-          this.routeOptions.fullscreen = !!firstChild.data['fullscreen'];
-        }
-      }
     });
   }
 

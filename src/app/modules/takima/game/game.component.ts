@@ -1,13 +1,16 @@
-import { RaceResult } from '../../modules/kart/shared/models/raceResult';
-import { FooterAction } from '../../shared/models/footerBtn';
-import { MSG_TWITTER, URL_JOB } from '../../app.constants';
+import { RaceResult } from '../../kart/shared/models/raceResult';
+
+
 import { Component, OnDestroy, OnInit } from '@angular/core';
-import { FooterService } from '../../shared/services/footer.service';
-import { RaceService } from '../../modules/kart/shared/services/race.service';
+import { FooterService } from '../shared/services/footer.service';
+import { RaceService } from '../../kart/shared/services/race.service';
 import { Subscription } from 'rxjs';
-import { GameService } from '../../modules/kart/shared/services/game.service';
-import { ResultAction } from '../../shared/models/raceResultBtn';
-import { Rules } from '../../modules/kart/shared/models/rules';
+import { GameService } from '../../kart/shared/services/game.service';
+
+import { Rules } from '../../kart/shared/models/rules';
+import { ResultAction } from '../shared/models/raceResultBtn';
+import { FooterAction } from '../shared/models/footerBtn';
+import { MSG_TWITTER, URL_JOB } from '../takima.constants';
 
 @Component({
   selector: 'app-game',

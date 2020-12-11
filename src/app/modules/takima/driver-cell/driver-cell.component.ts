@@ -1,5 +1,5 @@
 import { Component, Input, OnDestroy, OnInit } from '@angular/core';
-import { Driver } from '../../modules/kart/shared/models/driver';
+import { Driver } from '../../kart/shared/models/driver';
 
 @Component({
   selector: 'app-driver-cell',
@@ -21,7 +21,7 @@ export class DriverCellComponent implements OnInit, OnDestroy {
   constructor() { }
 
   ngOnInit(): void {
-    this.intervalId = setInterval( () => {
+    this.intervalId = window.setInterval( () => {
        this.frame = (this.frame+1) % this.frames.length;
     }, 200);
   }

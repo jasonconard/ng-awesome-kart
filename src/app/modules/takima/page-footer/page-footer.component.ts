@@ -1,6 +1,6 @@
 import { Component, Input, OnInit } from '@angular/core';
-import { FooterBtn } from '../../shared/models/footerBtn';
-import { FooterService } from '../../shared/services/footer.service';
+import { FooterService } from '../shared/services/footer.service';
+import { FooterBtn } from '../shared/models/footerBtn';
 
 @Component({
   selector: 'app-page-footer',

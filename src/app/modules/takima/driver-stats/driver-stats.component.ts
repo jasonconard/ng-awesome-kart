@@ -1,6 +1,6 @@
 import { Component, Input, OnChanges, OnInit, SimpleChanges } from '@angular/core';
-import { Driver } from '../../modules/kart/shared/models/driver';
-import { STATS_MAX } from '../../modules/kart/kart.constants';
+import { Driver } from '../../kart/shared/models/driver';
+import { STATS_MAX } from '../../kart/kart.constants';
 
 @Component({
   selector: 'app-driver-stats',

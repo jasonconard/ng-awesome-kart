@@ -4,16 +4,11 @@ import { RequestService } from './request.service';
 import { map } from 'rxjs/operators';
 import { DriverService } from './driver.service';
 import { CircuitService } from './circuit.service';
-import { Subject } from 'rxjs';
 
 @Injectable({
   providedIn: 'root'
 })
 export class InitService {
-
-  public forcedFullscreen = false;
-  private forcedFullscreenSubject = new Subject<boolean>();
-  public forcedFullscreenState = this.forcedFullscreenSubject.asObservable();
 
   constructor(private requestService: RequestService,
               private circuitService: CircuitService,
@@ -29,9 +24,4 @@ export class InitService {
     })).subscribe();
   }
 
-
-  setForcedFullscreen(forced: boolean) {
-    this.forcedFullscreen = forced;
-    this.forcedFullscreenSubject.next(forced);
-  }
 }

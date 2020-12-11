@@ -1,21 +1,21 @@
 import { NgModule } from '@angular/core';
 import { RaceComponent } from './race/race.component';
 import { StickComponent } from './stick/stick.component';
-import { TimePipe } from './shared/pipes/time.pipe';
+import { TimePipe } from '../../shared/pipes/time.pipe';
 import { CommonModule } from '@angular/common';
+import { SharedModule } from '../../shared/shared.module';
 
 @NgModule({
   imports: [
-    CommonModule
+    CommonModule,
+    SharedModule
   ],
   exports: [
-    RaceComponent,
-    TimePipe
+    RaceComponent
   ],
   declarations: [
     RaceComponent,
-    StickComponent,
-    TimePipe
+    StickComponent
   ]
 })
 export class KartModule { }

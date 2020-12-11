@@ -1,14 +1,14 @@
 import { Component, ElementRef, OnDestroy, OnInit, ViewChild } from '@angular/core';
 import { fromEvent, Subscription } from 'rxjs';
-import { DriverService } from '../../modules/kart/shared/services/driver.service';
-import { Driver } from '../../modules/kart/shared/models/driver';
-import { FooterService } from '../../shared/services/footer.service';
-import { FooterAction } from '../../shared/models/footerBtn';
+import { DriverService } from '../../kart/shared/services/driver.service';
+import { Driver } from '../../kart/shared/models/driver';
+import { FooterService } from '../shared/services/footer.service';
 import { Router } from '@angular/router';
-import { GameService } from '../../modules/kart/shared/services/game.service';
+import { GameService } from '../../kart/shared/services/game.service';
 import { animate, style, transition, trigger } from '@angular/animations';
-import { InitService } from '../../modules/kart/shared/services/init.service';
-import { ControlsService } from '../../modules/kart/shared/services/controls.service';
+import { ControlsService } from '../../kart/shared/services/controls.service';
+import { FooterAction } from '../shared/models/footerBtn';
+import { CoreService } from '../../../shared/services/core.service';
 
 interface PlayerGrid {
   nbItemPerRow: number,
@@ -62,7 +62,7 @@ export class DriverChoiceComponent implements OnInit, OnDestroy {
 
   constructor(private driverService: DriverService,
               private gameService: GameService,
-              private initService: InitService,
+              private coreService: CoreService,
               private router: Router,
               private controlsService: ControlsService,
               private footerService: FooterService) { }
@@ -88,9 +88,9 @@ export class DriverChoiceComponent implements OnInit, OnDestroy {
 
     this.subs.push(fromEvent(window, 'resize').subscribe(() => {
       if(this.fieldFocus && window.innerHeight < 200) {
-        this.initService.setForcedFullscreen(true);
+        this.coreService.setForcedFullscreen(true);
       } else {
-        this.initService.setForcedFullscreen(false);
+        this.coreService.setForcedFullscreen(false);
       }
       this.updatePlayerGrid();
     }));
@@ -113,7 +113,7 @@ export class DriverChoiceComponent implements OnInit, OnDestroy {
     if(this.fieldFocus) {
       this.confirming = true;
     } else {
-      this.router.navigate(['game']);
+      this.router.navigate(['takima/game']);
     }
   }
 
@@ -181,9 +181,9 @@ export class DriverChoiceComponent implements OnInit, OnDestroy {
   toggleFieldFocus(focused: boolean) {
     clearTimeout(this.fieldFocusTimeout);
     if(!focused) {
-      this.fieldFocusTimeout = setTimeout( () => {
+      this.fieldFocusTimeout = window.setTimeout( () => {
         if(this.confirming) {
-          this.router.navigate(['game']);
+          this.router.navigate(['takima/game']);
         }
         this.confirming = false;
         this.fieldFocus = false;
