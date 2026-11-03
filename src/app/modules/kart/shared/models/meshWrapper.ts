@@ -1,8 +1,8 @@
-import { Geometry, Material, Mesh, Texture } from 'three';
+import { BufferGeometry, Material, Mesh, Texture } from 'three';
 
 export interface MeshWrapper {
   tex: Texture,
   material: Material,
-  geometry: Geometry,
+  geometry: BufferGeometry,
   mesh: Mesh
 }

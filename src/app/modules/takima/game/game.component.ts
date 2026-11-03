@@ -1,7 +1,7 @@
 import { RaceResult } from '../../kart/shared/models/raceResult';
 
 
-import { Component, OnDestroy, OnInit } from '@angular/core';
+import { ChangeDetectionStrategy, Component, OnDestroy, OnInit } from '@angular/core';
 import { FooterService } from '../shared/services/footer.service';
 import { RaceService } from '../../kart/shared/services/race.service';
 import { Subscription } from 'rxjs';
@@ -13,6 +13,8 @@ import { FooterAction } from '../shared/models/footerBtn';
 import { MSG_TWITTER, URL_JOB } from '../takima.constants';
 
 @Component({
+  standalone: false,
+  changeDetection: ChangeDetectionStrategy.Eager,
   selector: 'app-game',
   templateUrl: './game.component.html',
   styleUrls: ['./game.component.scss']

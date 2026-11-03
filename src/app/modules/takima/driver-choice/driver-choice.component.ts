@@ -1,4 +1,4 @@
-import { Component, ElementRef, OnDestroy, OnInit, ViewChild } from '@angular/core';
+import { ChangeDetectionStrategy, Component, ElementRef, OnDestroy, OnInit, ViewChild } from '@angular/core';
 import { fromEvent, Subscription } from 'rxjs';
 import { DriverService } from '../../kart/shared/services/driver.service';
 import { Driver } from '../../kart/shared/models/driver';
@@ -17,6 +17,8 @@ interface PlayerGrid {
 }
 
 @Component({
+  standalone: false,
+  changeDetection: ChangeDetectionStrategy.Eager,
   selector: 'app-driver-choice',
   templateUrl: './driver-choice.component.html',
   styleUrls: ['./driver-choice.component.scss'],

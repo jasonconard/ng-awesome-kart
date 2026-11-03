@@ -5,7 +5,7 @@ import { Stick } from '../models/stick';
 import { MathUtils } from 'three';
 import { ControlsKey, ControlsType } from '../enums/controls';
 import { RotateDirection } from '../models/racer';
-import degToRad = MathUtils.degToRad;
+const degToRad = MathUtils.degToRad;
 
 @Injectable({
   providedIn: 'root'

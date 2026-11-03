@@ -13,13 +13,13 @@ import {
 } from 'three';
 import { forkJoin, Observable } from 'rxjs';
 import { Building } from '../models/building';
-import { Observer } from 'rxjs/internal/types';
+import { Observer } from 'rxjs';
 import { ItemType, MoveType } from '../models/item';
 import { RequestService } from './request.service';
 import { RequestConfig } from '../models/requestConfig';
 import { map } from 'rxjs/operators';
 import { CircuitSprite } from '../models/circuitSprite';
-import degToRad = MathUtils.degToRad;
+const degToRad = MathUtils.degToRad;
 
 @Injectable({
   providedIn: 'root'
@@ -121,18 +121,9 @@ export class CircuitService {
               side: DoubleSide
             });
 
-            const trackMapping = [
-              new Vector2(0,1),
-              new Vector2(0,0),
-              new Vector2(1,0),
-              new Vector2(1,1)
-            ];
-
 
             texMaterial.transparent = true;
             const texGeometry = new PlaneGeometry( sprite.width, sprite.height, 1, 1);
-            texGeometry.faceVertexUvs[0][0] = [ trackMapping[0], trackMapping[1], trackMapping[3] ];
-            texGeometry.faceVertexUvs[0][1] = [ trackMapping[1], trackMapping[2], trackMapping[3] ];
 
             const plane = new Mesh( texGeometry, texMaterial );
             plane.position.x = 0;
@@ -181,18 +172,9 @@ export class CircuitService {
               side: DoubleSide
             });
 
-            const trackMapping = [
-              new Vector2(0,1),
-              new Vector2(0,0),
-              new Vector2(1,0),
-              new Vector2(1,1)
-            ];
-
             texMaterial.transparent = true;
 
             const texGeometry = new PlaneGeometry( 5, 5, 1, 1);
-            texGeometry.faceVertexUvs[0][0] = [ trackMapping[0], trackMapping[1], trackMapping[3] ];
-            texGeometry.faceVertexUvs[0][1] = [ trackMapping[1], trackMapping[2], trackMapping[3] ];
 
             const plane = new Mesh( texGeometry, texMaterial );
             plane.position.x = 0;
@@ -294,16 +276,7 @@ export class CircuitService {
               map: tex
             });
 
-            const trackMapping = [
-              new Vector2(0,1),
-              new Vector2(0,0),
-              new Vector2(1,0),
-              new Vector2(1,1)
-            ];
-
             const geometry = new PlaneGeometry( this.currentCircuit.width, this.currentCircuit.height, 1, 1);
-            geometry.faceVertexUvs[0][0] = [ trackMapping[0], trackMapping[1], trackMapping[3] ];
-            geometry.faceVertexUvs[0][1] = [ trackMapping[1], trackMapping[2], trackMapping[3] ];
 
             const mesh = new Mesh( geometry, material );
             mesh.position.x = this.currentCircuit.width/2;

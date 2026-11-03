@@ -1,9 +1,11 @@
-import { Component, EventEmitter, Input, OnDestroy, OnInit, Output } from '@angular/core';
+import { ChangeDetectionStrategy, Component, EventEmitter, Input, OnDestroy, OnInit, Output } from '@angular/core';
 import { RaceResult } from '../../kart/shared/models/raceResult';
 import { CookieService } from '../../../shared/services/cookie.service';
 import { RaceResultBtn, ResultAction } from '../shared/models/raceResultBtn';
 
 @Component({
+  standalone: false,
+  changeDetection: ChangeDetectionStrategy.Eager,
   selector: 'app-pop-result',
   templateUrl: './pop-result.component.html',
   styleUrls: ['./pop-result.component.scss']

@@ -8,7 +8,7 @@ import { ControlsService } from './controls.service';
 import { MathUtils } from 'three';
 import { GameService } from './game.service';
 import { Subject } from 'rxjs';
-import degToRad = MathUtils.degToRad;
+const degToRad = MathUtils.degToRad;
 import { Race } from '../models/race';
 import { Rules } from '../models/rules';
 

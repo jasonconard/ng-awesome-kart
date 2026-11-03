@@ -1,8 +1,10 @@
-import { Component, Input, OnChanges, OnInit, SimpleChanges } from '@angular/core';
+import { ChangeDetectionStrategy, Component, Input, OnChanges, OnInit, SimpleChanges } from '@angular/core';
 import { Driver } from '../../kart/shared/models/driver';
 import { STATS_MAX } from '../../kart/kart.constants';
 
 @Component({
+  standalone: false,
+  changeDetection: ChangeDetectionStrategy.Eager,
   selector: 'app-driver-stats',
   templateUrl: './driver-stats.component.html',
   styleUrls: ['./driver-stats.component.scss']

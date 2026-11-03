@@ -1,12 +1,9 @@
-import { enableProdMode } from '@angular/core';
-
-import { AppModule } from './app/app.module';
-import { environment } from './environments/environment';
+import { provideZoneChangeDetection } from '@angular/core';
 import { platformBrowser } from '@angular/platform-browser';
+import { AppModule } from './app/app.module';
 
-if (environment.production) {
-  enableProdMode();
-}
-
-platformBrowser().bootstrapModule(AppModule)
+platformBrowser().bootstrapModule(AppModule, {
+  // The app relies on zone.js to trigger change detection (Angular is zoneless by default since v21).
+  applicationProviders: [provideZoneChangeDetection()]
+})
   .catch(err => console.error(err));

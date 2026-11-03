@@ -40,7 +40,7 @@
   @media(max-height: 600px) {
     bottom: auto;
     top: 10px;
-    left: unquote('calc(10px + env(safe-area-inset-left))');
+    left: calc(10px + env(safe-area-inset-left));
 
     &.site {
       top: 60px;

@@ -338,17 +338,16 @@ export class RacerService {
     const x = picPos.x * step;
     const y = 1 - picPos.y * step;
 
-    const trackMapping: Vector2[] = [
-      new Vector2(x,y), // left bottom
-      new Vector2(x,y-step), // left top
-      new Vector2(x+step,y-step), // right top
-      new Vector2(x+step,y),  // right bottom
-    ];
-
     const carGeometry = new PlaneGeometry( racer.driver.stats.width * 1.5, racer.driver.stats.width * 1.5, 1, 1);
 
-    carGeometry.faceVertexUvs[0][0] = [ trackMapping[0], trackMapping[1], trackMapping[3] ];
-    carGeometry.faceVertexUvs[0][1] = [ trackMapping[1], trackMapping[2], trackMapping[3] ];
+    // Map the plane onto one cell of the sprite sheet.
+    // PlaneGeometry vertex order: top-left, top-right, bottom-left, bottom-right.
+    const uv = carGeometry.getAttribute('uv');
+    uv.setXY(0, x, y);
+    uv.setXY(1, x + step, y);
+    uv.setXY(2, x, y - step);
+    uv.setXY(3, x + step, y - step);
+    uv.needsUpdate = true;
 
     return carGeometry;
   }

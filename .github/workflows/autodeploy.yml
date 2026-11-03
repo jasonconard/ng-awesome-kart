@@ -1,9 +1,12 @@
-name: Autodeploy First Try
+name: Autodeploy
 
 on:
   push:
     branches:
       - 'main'
+
+permissions:
+  contents: write
 
 jobs:
   build:
@@ -11,18 +14,19 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v2
-      - name: Use Node 12.x
-        uses: actions/setup-node@v1
+        uses: actions/checkout@v4
+      - name: Use Node
+        uses: actions/setup-node@v4
         with:
-          node-version: '12.x'
+          node-version-file: '.nvmrc'
+          cache: 'npm'
       - name: Install dependencies
         run: npm ci
       - name: Build
         run: npm run gh-build
       - name: Archive build
         if: success()
-        uses: actions/upload-artifact@v1
+        uses: actions/upload-artifact@v4
         with:
           name: deploy_dist
           path: docs
@@ -31,15 +35,15 @@ jobs:
     needs: build
     steps:
       - name: Checkout
-        uses: actions/checkout@v1
+        uses: actions/checkout@v4
       - name: Download build
-        uses: actions/download-artifact@v1
+        uses: actions/download-artifact@v4
         with:
           name: deploy_dist
+          path: deploy_dist
       - name: Deploy to GitHub Pages
-        uses: JamesIves/github-pages-deploy-action@releases/v3
+        uses: JamesIves/github-pages-deploy-action@v4
         with:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          BRANCH: gh-pages
-          FOLDER: deploy_dist
-          CLEAN: true
+          branch: gh-pages
+          folder: deploy_dist
+          clean: true

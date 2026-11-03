@@ -1,7 +1,9 @@
-import { Component, Input, OnDestroy, OnInit } from '@angular/core';
+import { ChangeDetectionStrategy, Component, Input, OnDestroy, OnInit } from '@angular/core';
 import { Driver } from '../../kart/shared/models/driver';
 
 @Component({
+  standalone: false,
+  changeDetection: ChangeDetectionStrategy.Eager,
   selector: 'app-driver-cell',
   templateUrl: './driver-cell.component.html',
   styleUrls: ['./driver-cell.component.scss']

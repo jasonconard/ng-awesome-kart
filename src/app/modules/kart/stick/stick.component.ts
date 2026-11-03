@@ -1,9 +1,11 @@
-import { Component, OnDestroy, OnInit } from '@angular/core';
+import { ChangeDetectionStrategy, Component, OnDestroy, OnInit } from '@angular/core';
 import { Subscription } from 'rxjs';
 import { Stick } from '../shared/models/stick';
 import { ControlsService } from '../shared/services/controls.service';
 
 @Component({
+  standalone: false,
+  changeDetection: ChangeDetectionStrategy.Eager,
   selector: 'kart-stick',
   templateUrl: './stick.component.html',
   styleUrls: ['./stick.component.scss']

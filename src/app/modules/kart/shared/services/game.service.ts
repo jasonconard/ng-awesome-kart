@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { DriftFire, MoveAction, Racer, RACER_PICS, RacerStatus, RotateDirection } from '../models/racer';
-import { DirectionalLight, MathUtils, PerspectiveCamera, Scene, Vector2, Vector3, WebGLRenderer } from 'three';
+import { ColorManagement, DirectionalLight, LinearSRGBColorSpace, MathUtils, PerspectiveCamera, Scene, Vector2, Vector3, WebGLRenderer } from 'three';
 import { forkJoin, fromEvent, Observable, Observer, Subject, Subscription } from 'rxjs';
 import { CircuitService } from './circuit.service';
 import { map } from 'rxjs/operators';
@@ -10,9 +10,12 @@ import { ControlsService } from './controls.service';
 import { CAMERA_BACK, CAMERA_FOCUS, CAMERA_HEIGHT, CAMERA_MAX, CLIPPING_DIST } from '../../kart.constants';
 import { Race } from '../models/race';
 import { RaceResult } from '../models/raceResult';
-import degToRad = MathUtils.degToRad;
+const degToRad = MathUtils.degToRad;
 import { AudioService } from './audio.service';
 import { SoundKey } from '../models/sound';
+
+// Keep the pre-r152 color pipeline (no sRGB conversion) so textures render as before.
+ColorManagement.enabled = false;
 
 @Injectable({
   providedIn: 'root'
@@ -74,7 +77,7 @@ export class GameService {
       this.camera.up = new Vector3(0,0,1);
       this.camera.lookAt(new Vector3(0, CAMERA_FOCUS, 0));
 
-      const directionalLight = new DirectionalLight( 0xffffff, 0.9 );
+      const directionalLight = new DirectionalLight( 0xffffff, 0.9 * Math.PI );
       directionalLight.position.y = -750;
       directionalLight.position.z = 1500;
       directionalLight.position.x = 750;
@@ -91,6 +94,7 @@ export class GameService {
 
       this.loadResources().subscribe( () => {
         this.renderer = new WebGLRenderer({ alpha: true });
+        this.renderer.outputColorSpace = LinearSRGBColorSpace;
 
         this.renderer.setSize( container.clientWidth, container.clientHeight );
 

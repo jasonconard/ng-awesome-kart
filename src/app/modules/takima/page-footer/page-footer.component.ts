@@ -1,8 +1,10 @@
-import { Component, Input, OnInit } from '@angular/core';
+import { ChangeDetectionStrategy, Component, Input, OnInit } from '@angular/core';
 import { FooterService } from '../shared/services/footer.service';
 import { FooterBtn } from '../shared/models/footerBtn';
 
 @Component({
+  standalone: false,
+  changeDetection: ChangeDetectionStrategy.Eager,
   selector: 'app-page-footer',
   templateUrl: './page-footer.component.html',
   styleUrls: ['./page-footer.component.scss']

@@ -1,4 +1,4 @@
-import { Component, ElementRef, EventEmitter, Input, OnDestroy, OnInit, Output, ViewChild } from '@angular/core';
+import { ChangeDetectionStrategy, Component, ElementRef, EventEmitter, Input, OnDestroy, OnInit, Output, ViewChild } from '@angular/core';
 import { animate, style, transition, trigger } from '@angular/animations';
 import { Subscription } from 'rxjs';
 import { DriverService } from '../shared/services/driver.service';
@@ -10,6 +10,8 @@ import { Race } from '../shared/models/race';
 import { Rules } from '../shared/models/rules';
 
 @Component({
+  standalone: false,
+  changeDetection: ChangeDetectionStrategy.Eager,
   selector: 'kart-race',
   templateUrl: './race.component.html',
   styleUrls: ['./race.component.scss'],

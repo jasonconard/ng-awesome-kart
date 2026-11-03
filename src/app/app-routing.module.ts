@@ -6,13 +6,13 @@ const routes: Routes = [
   {
     path: 'takima',
     component: TakimaComponent,
-    loadChildren: './modules/takima/takima.module#TakimaModule'
+    loadChildren: () => import('./modules/takima/takima.module').then(m => m.TakimaModule)
   },
   { path: '', redirectTo: '/takima/welcome', pathMatch: 'full' }
 ];
 
 @NgModule({
-  imports: [RouterModule.forRoot(routes, { useHash: true, relativeLinkResolution: 'legacy' })],
+  imports: [RouterModule.forRoot(routes, { useHash: true })],
   exports: [RouterModule]
 })
 export class AppRoutingModule { }

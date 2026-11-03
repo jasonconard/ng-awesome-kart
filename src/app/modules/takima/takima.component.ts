@@ -1,9 +1,11 @@
-import { Component, OnInit } from '@angular/core';
+import { ChangeDetectionStrategy, Component, OnInit } from '@angular/core';
 import { ActivatedRoute, NavigationEnd, Router } from '@angular/router';
 import { FooterBtn } from './shared/models/footerBtn';
 import { CoreService } from '../../shared/services/core.service';
 
 @Component({
+  standalone: false,
+  changeDetection: ChangeDetectionStrategy.Eager,
   selector: 'takima-root',
   templateUrl: './takima.component.html',
   styleUrls: ['./takima.component.scss']
